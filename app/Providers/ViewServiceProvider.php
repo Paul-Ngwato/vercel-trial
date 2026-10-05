@@ -17,7 +17,13 @@ class ViewServiceProvider extends ServiceProvider
     {
         View::composer('*', function ($view) {
             if (! View::shared('wedding')) {
-                View::share('wedding', Wedding::first());
+                try {
+                    $wedding = Wedding::first();
+                } catch (\Throwable $e) {
+                    report($e);
+                    $wedding = null;
+                }
+                View::share('wedding', $wedding);
             }
         });
     }

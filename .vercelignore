@@ -1,0 +1,24 @@
+# Secrets and local-only files: never upload these to Vercel
+.env
+.env.*
+!.env.example
+
+# Installed by Vercel / not needed at runtime
+vendor
+node_modules
+tests
+phpunit.xml
+.phpunit.cache
+
+# Local data and runtime folders
+database/*.sqlite
+storage/logs
+storage/framework/cache
+storage/framework/sessions
+storage/framework/views
+public/hot
+public/storage
+
+# Served via api/index.php instead; keep the front controller out of static files
+public/index.php
+public/.htaccess

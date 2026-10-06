@@ -20,7 +20,8 @@
     var pending = new WeakMap();
 
     function mb(bytes) {
-        return (bytes / 1048576).toFixed(1) + ' MB';
+        if (bytes >= 1048576) return (bytes / 1048576).toFixed(1) + ' MB';
+        return Math.max(1, Math.round(bytes / 1024)) + ' KB';
     }
 
     function isCompressible(file) {

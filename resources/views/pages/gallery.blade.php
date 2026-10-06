@@ -137,7 +137,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Photos * (up to 10)</label>
                     <input type="file" name="photos[]" multiple accept="image/*"
                            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-secondary focus:ring-2 focus:ring-secondary/20 outline-none transition file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-secondary/10 file:text-secondary hover:file:bg-secondary/20">
-                    <p class="text-xs text-gray-400 mt-1">JPG, PNG, GIF, or WebP — Max 10MB each</p>
+                    <p class="text-xs text-gray-400 mt-1">JPG, PNG, or WebP — photos are resized automatically before upload, so they send fast</p>
                 </div>
 
                 <button type="submit" class="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-3 rounded-full text-sm uppercase tracking-wider transition-all duration-300 inline-flex items-center justify-center gap-2">

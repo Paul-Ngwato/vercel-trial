@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Photo;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class PhotoController extends Controller
 {
@@ -45,6 +46,7 @@ class PhotoController extends Controller
 
     public function destroy(Photo $photo)
     {
+        Storage::disk('public')->delete($photo->file_path);
         $photo->delete();
         return back()->with('success', 'Photo deleted.');
     }

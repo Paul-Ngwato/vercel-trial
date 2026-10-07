@@ -17,7 +17,6 @@ storage/framework/cache
 storage/framework/sessions
 storage/framework/views
 public/hot
-public/storage
 
 # Served via api/index.php instead; keep the front controller out of static files
 public/index.php

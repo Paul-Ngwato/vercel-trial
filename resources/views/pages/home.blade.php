@@ -49,11 +49,7 @@
         </div>
     </div>
 
-    {{-- Popup photos — always inside the screen frame --}}
-    <div id="intro-popups" aria-hidden="true"></div>
-
-    <div id="intro-spark" aria-hidden="true"></div>
-    <button id="intro-skip" class="intro-skip" type="button">Skip intro</button>
+    {{-- Popup photos — always inside the screen frame --}}    <div id="intro-popups" aria-hidden="true"></div>
     <button id="intro-replay" class="intro-replay" type="button" hidden><i class="bi bi-arrow-counterclockwise"></i> Replay intro</button>
 </div>
 
@@ -366,11 +362,17 @@
         <p class="mt-2 text-sm">{{ $wedding->wedding_date?->format('F j, Y') ?? '' }}</p>
         @if($wedding->contact_email || $wedding->contact_phone)
             <p class="mt-3 text-xs text-white/50">
-                @if($wedding->contact_email)<span class="mr-3"><i class="bi bi-envelope mr-1"></i>{{ $wedding->contact_email }}</span>@endif
-                @if($wedding->contact_phone)<span><i class="bi bi-telephone mr-1"></i>{{ $wedding->contact_phone }}</span>@endif
+                <span class="text-white/35">Organizers:</span>
+                @if($wedding->contact_email)<a href="mailto:{{ $wedding->contact_email }}" class="mr-3 hover:text-secondary transition-colors"><i class="bi bi-envelope mr-1"></i>{{ $wedding->contact_email }}</a>@endif
+                @if($wedding->contact_phone)<a href="tel:{{ preg_replace('/[^0-9+]/', '', $wedding->contact_phone) }}" class="hover:text-secondary transition-colors"><i class="bi bi-telephone mr-1"></i>{{ $wedding->contact_phone }}</a>@endif
             </p>
         @endif
         <p class="mt-5 text-xs text-white/40">Made with <i class="bi bi-heart-fill text-secondary"></i> for a beautiful celebration</p>
+        <a href="{{ auth()->check() ? route('admin.dashboard') : route('admin.login') }}" title="Admin"
+           aria-label="Admin area"
+           class="inline-flex items-center gap-1.5 mt-3 text-[11px] text-white/30 hover:text-secondary transition-colors">
+            <i class="bi bi-gear"></i> Admin
+        </a>
     </div>
 </footer>
 
@@ -797,9 +799,7 @@
     .spark-bit { position: absolute; left: 0; top: 0; font-style: normal; color: #f3d98b; opacity: 0; animation: sparkFly .95s ease-out forwards; }
     .spark-bit.spark-heart { color: #fff; }
     @keyframes sparkFly { 0% { opacity: 0; transform: translate(-50%,-50%) scale(.4); } 15% { opacity: 1; } 100% { opacity: 0; transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(var(--sc)); } }
-    .intro-skip { position: absolute; bottom: max(18px, env(safe-area-inset-bottom, 18px)); right: 18px; z-index: 7; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.18); color: rgba(255,255,255,.6); font-size: 11px; letter-spacing: .18em; text-transform: uppercase; padding: 8px 14px; border-radius: 999px; cursor: pointer; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); transition: all .3s ease; }
-    .intro-skip:hover { color: #fff; border-color: rgba(201,168,76,.6); background: rgba(201,168,76,.15); }
-    #wedding-intro.is-done .intro-skip { opacity: 0; pointer-events: none; }
+    /* (skip button removed — the intro plays in full) */
     /* Replay pill — floats above the page after the intro, so guests can watch it again */
     .intro-replay { position: fixed; bottom: max(84px, calc(env(safe-area-inset-bottom, 0px) + 84px)); left: 50%; transform: translateX(-50%) translateY(8px); z-index: 60; display: inline-flex; align-items: center; gap: 7px; background: rgba(13,31,21,.72); border: 1px solid rgba(201,168,76,.45); color: rgba(255,255,255,.85); font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase; padding: 8px 16px; border-radius: 999px; cursor: pointer; opacity: 0; pointer-events: none; transition: all .35s ease; -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); box-shadow: 0 10px 26px rgba(0,0,0,.3); }
     .intro-replay.show { opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(0); }
@@ -1107,7 +1107,7 @@ function rsvpWizard() {
             /* a replay may have restarted the intro inside the 850ms fade — don't kill it */
             if (finished && intro.classList.contains('is-done')) {
                 intro.classList.remove('is-on');
-                if (replayPill) replayPill.classList.add('show');
+                armReplayPill();
             }
         }, 850);
     }
@@ -1230,8 +1230,7 @@ function rsvpWizard() {
             envBtn.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') openEnvelope(); });
         }
     }
-    const skip = document.getElementById('intro-skip');
-    if (skip) skip.addEventListener('click', finish);
+    const skip = null; /* skip button removed — intro plays in full */
 
     /* ═══ Invitation card: continue + save-as-image ═══ */
     function downloadInvitation(btn) {
@@ -1346,12 +1345,10 @@ function rsvpWizard() {
         }
     }
 
-    /* Coming back with a section anchor (e.g. after submitting the RSVP) or having
-       already seen the intro this session: land straight on the page, no auto-replay.
-       The overlay stays in the DOM either way, so the “Replay intro” pill can bring it back. */
-    let seen = false;
-    try { seen = sessionStorage.getItem('weddingIntroSeen') === '1'; } catch (e) {}
-    if ((window.location.hash && window.location.hash !== '#top') || seen) {
+    /* Every page load plays the intro in full — it's the invitation moment.
+       Coming back with a section anchor (e.g. after submitting the RSVP) still
+       lands straight on the page. The "Replay intro" pill remains for re-watching. */
+    if (window.location.hash && window.location.hash !== '#top') {
         markSeen();
         armReplayPill();
     } else {

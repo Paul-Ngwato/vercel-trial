@@ -9,6 +9,14 @@
         <p class="text-white/50 text-sm font-medium mb-1">Welcome back <i class="bi bi-hand-index-thumb-fill"></i></p>
         <h1 class="text-xl sm:text-2xl font-bold">{{ $wedding->full_title ?? 'Wedding Dashboard' }}</h1>
         <p class="text-white/50 text-sm mt-1">{{ $wedding->wedding_date ? \Carbon\Carbon::parse($wedding->wedding_date)->format('F j, Y') : 'Set your wedding date' }}</p>
+        <div class="flex flex-wrap gap-2 mt-4">
+            <a href="{{ route('admin.settings') }}" class="inline-flex items-center gap-1.5 text-xs font-semibold bg-white/10 hover:bg-white/20 border border-white/15 text-white px-3.5 py-1.5 rounded-full transition-colors"><i class="bi bi-pencil-square"></i> Names, date & venue</a>
+            <a href="{{ route('admin.settings') }}" class="inline-flex items-center gap-1.5 text-xs font-semibold bg-white/10 hover:bg-white/20 border border-white/15 text-white px-3.5 py-1.5 rounded-full transition-colors"><i class="bi bi-images"></i> Hero & intro photos</a>
+            <a href="{{ route('admin.story') }}" class="inline-flex items-center gap-1.5 text-xs font-semibold bg-white/10 hover:bg-white/20 border border-white/15 text-white px-3.5 py-1.5 rounded-full transition-colors"><i class="bi bi-journal-bookmark-fill"></i> Our Story</a>
+            <a href="{{ route('admin.events') }}" class="inline-flex items-center gap-1.5 text-xs font-semibold bg-white/10 hover:bg-white/20 border border-white/15 text-white px-3.5 py-1.5 rounded-full transition-colors"><i class="bi bi-calendar2-week-fill"></i> Schedule</a>
+            <a href="{{ route('admin.information') }}" class="inline-flex items-center gap-1.5 text-xs font-semibold bg-white/10 hover:bg-white/20 border border-white/15 text-white px-3.5 py-1.5 rounded-full transition-colors"><i class="bi bi-card-list"></i> Good to Know</a>
+            <a href="{{ route('admin.settings') }}" class="inline-flex items-center gap-1.5 text-xs font-semibold bg-white/10 hover:bg-white/20 border border-white/15 text-white px-3.5 py-1.5 rounded-full transition-colors"><i class="bi bi-envelope-fill"></i> Contact info</a>
+        </div>
     </div>
 </div>
 
@@ -23,59 +31,6 @@
     <a href="{{ route('admin.notifications') }}" class="text-xs font-semibold bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg transition-colors">Review now</a>
 </div>
 @endif
-
-{{-- ═══ Intro Popup Photos ═══ --}}
-<div class="bg-white rounded-2xl shadow-sm border border-gray-100/80 p-6 mb-6">
-    <div class="flex items-center gap-2 mb-1">
-        <i class="bi bi-camera-fill text-gray-500"></i>
-        <h3 class="font-semibold text-gray-800">Intro Popup Photos</h3>
-        <span class="ml-auto text-[11px] text-gray-400 hidden sm:inline">Shown in the tap-to-reveal intro on the homepage</span>
-    </div>
-    <p class="text-xs text-gray-400 mb-4">These photos pop out on the screen, one after another, when a guest taps to reveal on the homepage. Max 5 photos, 5MB each.</p>
-
-    @if($wedding->introImages->count() < 5)
-        <form action="{{ route('admin.popup-photos.store') }}" method="POST" enctype="multipart/form-data" class="mb-5">
-            @csrf
-            <div class="flex flex-wrap items-center gap-3">
-                <input type="file" name="intro_images[]" multiple accept="image/*" required
-                       class="flex-1 min-w-[220px] px-3 py-2 rounded-lg border border-gray-300 text-sm file:mr-3 file:py-1.5 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-medium file:bg-secondary/10 file:text-secondary hover:file:bg-secondary/20">
-                <button type="submit"
-                        class="inline-flex items-center gap-2 bg-primary text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors">
-                    <i class="bi bi-plus-lg"></i> Add Photos
-                </button>
-            </div>
-            @error('intro_images')
-                <p class="text-red-500 text-xs mt-2">{{ $message }}</p>
-            @enderror
-            @error('intro_images.*')
-                <p class="text-red-500 text-xs mt-2">{{ $message }}</p>
-            @enderror
-        </form>
-    @else
-        <p class="text-xs text-amber-600 mb-5">Maximum of 5 popup photos reached — remove one to add more.</p>
-    @endif
-
-    @if($wedding->introImages->isNotEmpty())
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-            @foreach($wedding->introImages as $i => $img)
-                <div class="relative rounded-lg overflow-hidden border border-gray-200 aspect-[4/5] bg-gray-100 group">
-                    <img src="{{ asset('storage/' . $img->image_path) }}" alt="Intro popup photo {{ $i + 1 }}" class="w-full h-full object-cover">
-                    <span class="absolute bottom-1.5 left-1.5 text-[9px] font-medium text-white/90 bg-black/50 px-1.5 py-0.5 rounded">{{ $i + 1 }}</span>
-                    <form action="{{ route('admin.popup-photos.destroy', $img) }}" method="POST" class="absolute top-1.5 right-1.5">
-                        @csrf @method('DELETE')
-                        <button type="submit" onclick="return confirm('Remove this popup photo?')"
-                                class="w-7 h-7 rounded-full bg-red-600 text-white flex items-center justify-center shadow opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"
-                                title="Remove photo">
-                            <i class="bi bi-trash3 text-xs"></i>
-                        </button>
-                    </form>
-                </div>
-            @endforeach
-        </div>
-    @else
-        <p class="text-sm text-gray-400">No intro popup photos yet — add up to 5 above. They'll pop out on screen one by one when a guest taps the photo on the homepage intro.</p>
-    @endif
-</div>
 
 {{-- ═══ Primary Stats ═══ --}}
 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

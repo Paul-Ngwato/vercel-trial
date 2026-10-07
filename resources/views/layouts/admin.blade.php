@@ -86,11 +86,10 @@
                         ['route' => 'admin.story', 'label' => 'Our Story', 'icon' => 'bi-journal-bookmark-fill'],
                         ['route' => 'admin.events', 'label' => 'Schedule', 'icon' => 'bi-calendar2-week-fill'],
                         ['route' => 'admin.information', 'label' => 'Guest Info', 'icon' => 'bi-card-list'],
-                        ['route' => 'admin.popup-photos', 'label' => 'Popup Photos', 'icon' => 'bi-camera-reels-fill'],
+                        ['route' => 'admin.settings', 'label' => 'Settings', 'icon' => 'bi-gear-fill'],
                     ],
                     'SYSTEM' => [
                         ['route' => 'admin.notifications', 'label' => 'Activity', 'icon' => 'bi-bell-fill'],
-                        ['route' => 'admin.settings', 'label' => 'Settings', 'icon' => 'bi-gear-fill'],
                     ],
                 ];
             @endphp

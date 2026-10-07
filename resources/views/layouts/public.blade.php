@@ -539,13 +539,6 @@
         </div>
     </nav>
 
-    {{-- Discreet admin gear (mobile) — lands on the dashboard when signed in, the login page otherwise --}}
-    <a href="{{ auth()->check() ? route('admin.dashboard') : route('admin.login') }}" title="Admin"
-       aria-label="Admin area"
-       class="md:hidden fixed top-3 right-3 z-40 w-9 h-9 rounded-full bg-primary/70 text-secondary/80 border border-secondary/25 backdrop-blur flex items-center justify-center transition-all duration-200 hover:text-secondary active:scale-90">
-        <i class="bi bi-gear text-[15px]"></i>
-    </a>
-
     {{-- Main Content --}}
     <main class="pb-28 md:pb-0 pt-0">
         @yield('content')
@@ -583,14 +576,28 @@
         </div>
     </nav>
 
-    {{-- Footer --}}
+    {{-- Footer (home renders its own with contact info; this one covers the other pages) --}}
+    @unless(request()->routeIs('home'))
     <footer class="hidden md:block bg-primary text-white/70 py-8">
         <div class="max-w-6xl mx-auto px-6 text-center">
             <p class="font-playfair text-secondary text-lg">{{ $wedding->bride_name ?? '' }} & {{ $wedding->groom_name ?? '' }}</p>
             <p class="mt-2 text-sm">{{ $wedding->wedding_date?->format('F j, Y') ?? '' }}</p>
+            @if($wedding->contact_email || $wedding->contact_phone)
+                <p class="mt-3 text-xs text-white/50">
+                    <span class="text-white/35">Organizers:</span>
+                    @if($wedding->contact_email)<a href="mailto:{{ $wedding->contact_email }}" class="mr-3 hover:text-secondary transition-colors"><i class="bi bi-envelope mr-1"></i>{{ $wedding->contact_email }}</a>@endif
+                    @if($wedding->contact_phone)<a href="tel:{{ preg_replace('/[^0-9+]/', '', $wedding->contact_phone) }}" class="hover:text-secondary transition-colors"><i class="bi bi-telephone mr-1"></i>{{ $wedding->contact_phone }}</a>@endif
+                </p>
+            @endif
             <p class="mt-4 text-xs text-white/40">Made with <i class="bi bi-heart-fill text-secondary"></i> for a beautiful celebration</p>
+            <a href="{{ auth()->check() ? route('admin.dashboard') : route('admin.login') }}" title="Admin"
+               aria-label="Admin area"
+               class="inline-flex items-center gap-1.5 mt-3 text-[11px] text-white/30 hover:text-secondary transition-colors">
+                <i class="bi bi-gear"></i> Admin
+            </a>
         </div>
     </footer>
+    @endunless
 
     @stack('scripts')
 

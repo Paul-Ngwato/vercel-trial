@@ -10,6 +10,12 @@
     {{-- Stage 1 — the envelope --}}
     <div id="intro-envelope-stage" class="intro-stage">
         <div id="intro-env-floaties" aria-hidden="true"></div>
+        {{-- white petals drifting through the invitation moment --}}
+        <div id="intro-petals" aria-hidden="true">
+            @foreach (range(1, 22) as $i)
+                <span class="intro-petal" style="--ix:{{ rand(2, 96) }}%;--id:{{ rand(7, 15) }}s;--idl:{{ rand(-14, 0) }}s;--ir:{{ rand(0, 360) }}deg;">{{ ['✿', '❀', '✾', '❁'][rand(0, 3)] }}</span>
+            @endforeach
+        </div>
         <p class="intro-eyebrow">You are cordially invited to the wedding of</p>
         <h2 class="env-names font-playfair">{{ $wedding->bride_name ?? 'Bride' }} <em>&amp;</em> {{ $wedding->groom_name ?? 'Groom' }}</h2>
         <p class="env-date">{{ $wedding->wedding_date?->format('F j, Y') ?? 'Save the date' }}</p>
@@ -17,7 +23,7 @@
             <div class="env-glow" aria-hidden="true"></div>
             <div id="intro-envelope" class="lottie-envelope" role="button" tabindex="0" aria-label="Open the invitation"></div>
         </div>
-        <p class="env-tap">Tap the seal to open</p>
+        <p class="env-tap"><i class="bi bi-hand-index-thumb-fill"></i> Tap the seal to open</p>
     </div>
 
     {{-- Stage 2 — tap-to-reveal photo --}}
@@ -51,7 +57,8 @@
 
     {{-- Popup photos — always inside the screen frame --}}    <div id="intro-popups" aria-hidden="true"></div>
     <button id="intro-replay" class="intro-replay" type="button" hidden><i class="bi bi-arrow-counterclockwise"></i> Replay intro</button>
-    <button id="sound-toggle" class="sound-toggle" type="button" aria-pressed="true" title="Sound on / off" aria-label="Toggle sound"><i class="bi bi-volume-up-fill"></i></button>
+    {{-- sound toggle removed at the couple's request — the engine stays muted; 
+         to bring audio back, restore the button with id="sound-toggle" --}}
 </div>
 
 {{-- ═══════════════════════ HERO ═══════════════════════ --}}
@@ -61,10 +68,10 @@
     <div class="absolute -bottom-40 -right-32 w-[30rem] h-[30rem] rounded-full bg-secondary/10 blur-3xl pointer-events-none"></div>
 
     {{-- Wedding florals: white rose petals drifting down the hero --}}
-    <div id="flower-overlay" aria-hidden="true">
-        @php $flowerTypes = ['✿', '❀', '💐', '🌹', '🍀', '✾', '❁', '❧', '✺', '✾']; @endphp
-        @foreach (range(1, 34) as $i)
-            <span class="flower petal" style="--i:{{ $i }};--x:{{ (70 + rand(-18, 18)) }}%;--t:{{ rand(2, 12) }}s;--r:{{ rand(0, 360) }}deg;--d:{{ rand(6, 16) }}s;">
+    <div id="flower-overlay" class="petal-field" aria-hidden="true">
+        @php $flowerTypes = ['✿', '❀', '✾', '❁', '✾', '✿']; @endphp
+        @foreach (range(1, 30) as $i)
+            <span class="flower petal" style="--i:{{ $i }};--x:{{ rand(3, 97) }}%;--t:{{ rand(2, 12) }}s;--r:{{ rand(0, 360) }}deg;--d:{{ rand(8, 18) }}s;">
                 {{ $flowerTypes[$i % count($flowerTypes)] }}
             </span>
         @endforeach
@@ -187,6 +194,11 @@
 
 {{-- ═══════════════════════ SCHEDULE ═══════════════════════ --}}
 <section id="schedule" class="py-16 sm:py-24 bg-primary relative overflow-hidden">
+    <div class="petal-field" aria-hidden="true">
+        @foreach (range(1, 16) as $i)
+            <span class="petal" style="--i:{{ $i }};--x:{{ rand(3, 97) }}%;--t:{{ rand(3, 10) }}s;--r:{{ rand(0, 360) }}deg;--d:{{ rand(10, 20) }}s;">{{ ['✿', '❀', '❁'][rand(0, 2)] }}</span>
+        @endforeach
+    </div>
     <div class="absolute -top-24 right-0 w-96 h-96 rounded-full bg-secondary/10 blur-3xl pointer-events-none"></div>
     <div class="max-w-3xl mx-auto px-5 sm:px-6">
         <header class="section-head reveal">
@@ -299,6 +311,11 @@
 
 {{-- ═══════════════════════ RSVP ═══════════════════════ --}}
 <section id="rsvp" class="py-16 sm:py-24 bg-ivory relative overflow-hidden">
+    <div class="petal-field" aria-hidden="true">
+        @foreach (range(1, 14) as $i)
+            <span class="petal petal-gold" style="--i:{{ $i }};--x:{{ rand(3, 97) }}%;--t:{{ rand(3, 10) }}s;--r:{{ rand(0, 360) }}deg;--d:{{ rand(11, 21) }}s;">{{ ['✿', '❀', '✾'][rand(0, 2)] }}</span>
+        @endforeach
+    </div>
     <div class="absolute -top-28 -right-28 w-96 h-96 rounded-full bg-secondary/15 blur-3xl" aria-hidden="true"></div>
     <div class="absolute -bottom-36 -left-28 w-[28rem] h-[28rem] rounded-full bg-primary/10 blur-3xl" aria-hidden="true"></div>
 
@@ -529,68 +546,53 @@
     .ornament span:last-child { background: linear-gradient(to left, transparent, rgba(201,168,76,.7)); }
     .ornament i { color: #c9a84c; font-size: 13px; }
 
-    /* ═══ Wedding florals: white petals drift down the hero ═══ */
-    #flower-overlay { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
-    #flower-overlay .petal {
-        position: absolute;
-        font-size: clamp(1.2rem, 2.4vw, 2.2rem);
-        color: #fdf8f0;
-        text-shadow:
-            0 0 6px rgba(253, 248, 240, .55),
-            0 0 18px rgba(253, 248, 240, .22),
-            0 0 34px rgba(201, 168, 76, .12);
-        animation:
-            driftDown var(--d, 9s) ease-in infinite,
-            floatHue var(--t, 9s) linear infinite;
-        opacity: 0;
-        user-select: none;
-        pointer-events: none;
+    /* delicate line-art leaf sprigs — quietly botanical corners on cards */
+    .venue-card, .wish-card, .info-card { position: relative; }
+    .venue-card::before, .venue-card::after,
+    .wish-card::before, .wish-card::after,
+    .info-card::before, .info-card::after {
+        content: ''; position: absolute; width: 26px; height: 26px; opacity: .5; pointer-events: none;
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c9a84c' stroke-width='1.4' stroke-linecap='round'><path d='M4 20 C 9 19 14 14 15 5'/><path d='M15 9 c 3 0 5 2 5 5 c -3 0 -5 -2 -5 -5 Z'/><path d='M11 13 c -3 0 -5 2 -5 5 c 3 0 5 -2 5 -5 Z'/></svg>");
+        background-repeat: no-repeat;
     }
-    #flower-overlay .petal:nth-child(3n) { color: #f0e0d0; text-shadow: 0 0 4px rgba(240, 224, 208, .45); }
-    #flower-overlay .petal:nth-child(5n) { color: #ffffff; text-shadow: 0 0 8px rgba(255, 255, 255, .6); }
-    @keyframes driftDown {
-        0%   { opacity: 0; transform: translateY(-20px) rotate(var(--r, 0deg)) scale(0.6); }
-        12%  { opacity: 1; }
-        100% { opacity: 0; transform: translateY(108vh) rotate(var(--r, 0deg)) scale(1.35); }
-    }
-    @keyframes floatHue {
-        0%, 100% { filter: hue-rotate(0deg); opacity: 1; }
-        50%      { filter: hue-rotate(7deg); opacity: .92; }
-    }
-    @media (prefers-reduced-motion: reduce) {
-        #flower-overlay { display: none; }
-    }
+    .venue-card::before, .wish-card::before, .info-card::before { top: 10px; left: 10px; }
+    .venue-card::after, .wish-card::after, .info-card::after { bottom: 10px; right: 10px; transform: rotate(180deg); }
 
-    /* ═══ Wedding florals: white petals drift down the hero ═══ */
-    #flower-overlay { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
-    #flower-overlay .petal {
+    /* ═══ Wedding florals — shared drifting-petal field (.petal-field) ═══ */
+    .petal-field { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
+    .petal-field .petal {
         position: absolute;
-        font-size: clamp(1.2rem, 2.4vw, 2.2rem);
+        top: -10vh;
+        left: var(--x, 60%);
+        font-size: clamp(1.1rem, 2.2vw, 2rem);
         color: #fdf8f0;
         text-shadow:
-            0 0 6px rgba(253, 248, 240, .55),
-            0 0 18px rgba(253, 248, 240, .22),
+            0 0 6px rgba(253, 248, 240, .5),
+            0 0 18px rgba(253, 248, 240, .2),
             0 0 34px rgba(201, 168, 76, .12);
         animation:
             driftDown var(--d, 9s) ease-in infinite,
             floatHue var(--t, 9s) linear infinite;
+        animation-delay: calc(var(--i, 0) * -0.7s), 0s;
         opacity: 0;
         user-select: none;
         pointer-events: none;
     }
-    #flower-overlay .petal:nth-child(3n) { color: #f0e0d0; text-shadow: 0 0 4px rgba(240, 224, 208, .45); }
-    #flower-overlay .petal:nth-child(5n) { color: #ffffff; text-shadow: 0 0 8px rgba(255, 255, 255, .6); }
+    .petal-field .petal:nth-child(3n) { color: #f0e0d0; text-shadow: 0 0 4px rgba(240, 224, 208, .45); }
+    .petal-field .petal:nth-child(5n) { color: #ffffff; text-shadow: 0 0 8px rgba(255, 255, 255, .6); }
+    /* soft gold petals for light sections — white would vanish on ivory */
+    .petal-field .petal.petal-gold { color: rgba(201, 168, 76, .38); text-shadow: 0 0 6px rgba(201, 168, 76, .18); }
     @keyframes driftDown {
         0%   { opacity: 0; transform: translateY(-20px) rotate(var(--r, 0deg)) scale(0.6); }
         12%  { opacity: 1; }
-        100% { opacity: 0; transform: translateY(108vh) rotate(var(--r, 0deg)) scale(1.35); }
+        100% { opacity: 0; transform: translateY(118vh) rotate(calc(var(--r, 0deg) + 120deg)) scale(1.35); }
     }
     @keyframes floatHue {
         0%, 100% { filter: hue-rotate(0deg); opacity: 1; }
         50%      { filter: hue-rotate(7deg); opacity: .92; }
     }
     @media (prefers-reduced-motion: reduce) {
-        #flower-overlay { display: none; }
+        .petal-field { display: none; }
     }
 
     /* ═══ Scroll teaser ═══ */
@@ -708,6 +710,25 @@
     #intro-env-floaties { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
     .env-floatie { position: absolute; bottom: -28px; left: var(--x); font-style: normal; font-size: var(--fs); color: rgba(243,217,139,.85); opacity: 0; text-shadow: 0 0 10px rgba(201,168,76,.7); animation: envFloat var(--dur) linear var(--delay) infinite; }
     @keyframes envFloat { 0% { transform: translateY(0) rotate(0deg); opacity: 0; } 12% { opacity: var(--op); } 85% { opacity: var(--op); } 100% { transform: translateY(-108vh) rotate(var(--rot)); opacity: 0; } }
+
+    /* white petals drifting down through the whole invitation moment */
+    #intro-petals { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+    .intro-petal {
+        position: absolute; top: -6vh; left: var(--ix, 50%); font-style: normal;
+        font-size: clamp(14px, 2vw, 22px); color: rgba(255,255,255,.92);
+        text-shadow: 0 0 8px rgba(255,255,255,.45), 0 0 20px rgba(243,217,139,.35);
+        animation: introPetalFall var(--id, 10s) linear var(--idl, 0s) infinite;
+        opacity: 0;
+    }
+    .intro-petal:nth-child(3n) { color: rgba(243,217,139,.9); }
+    .intro-petal:nth-child(5n) { color: #fff; font-size: clamp(10px, 1.4vw, 15px); }
+    @keyframes introPetalFall {
+        0% { opacity: 0; transform: translateY(-6vh) translateX(0) rotate(var(--ir, 0deg)); }
+        10% { opacity: .9; }
+        50% { transform: translateY(52vh) translateX(24px) rotate(calc(var(--ir, 0deg) + 150deg)); }
+        90% { opacity: .8; }
+        100% { opacity: 0; transform: translateY(112vh) translateX(-18px) rotate(calc(var(--ir, 0deg) + 320deg)); }
+    }
     @media (max-width: 480px) { .env-names { font-size: clamp(21px, 7.2vw, 30px); } .env-date { margin: 7px 0 22px; } }
 
     /* ═══ Invitation card — opened anytime from the hero button ═══ */
@@ -897,26 +918,45 @@
 
     /* ═══ Envelope — Lottie animation, the star of the show ═══ */
     .lottie-wrap { position: relative; display: inline-block; }
-    .env-glow { position: absolute; inset: -34px; border-radius: 40px; background: radial-gradient(closest-side, rgba(201,168,76,.28), transparent); animation: envGlow 2.6s ease-in-out infinite; pointer-events: none; }
+    .env-glow { position: absolute; inset: -44px; border-radius: 48px; background: radial-gradient(closest-side, rgba(201,168,76,.34), transparent); animation: envGlow 2.6s ease-in-out infinite; pointer-events: none; }
+    .env-glow::after { content: ''; position: absolute; inset: 14%; border-radius: 50%; background: radial-gradient(closest-side, rgba(243,217,139,.30), transparent 70%); animation: envGlow 2.6s ease-in-out .6s infinite reverse; }
     @keyframes envGlow { 0%,100% { opacity: .5; transform: scale(1); } 50% { opacity: 1; transform: scale(1.06); } }
     .lottie-envelope {
         position: relative; z-index: 1;
-        width: min(360px, 86vw);
+        width: min(520px, 90vw);
         aspect-ratio: 1440 / 1024;
         cursor: pointer; outline: none;
         -webkit-tap-highlight-color: transparent;
         filter: drop-shadow(0 24px 50px rgba(0,0,0,.45));
         transition: transform .45s cubic-bezier(.2,.9,.3,1.2), opacity .5s ease;
+        animation: envBob 5.2s ease-in-out infinite;
     }
-    .lottie-envelope:hover { transform: scale(1.05) rotate(-1deg); }
-    .lottie-envelope.opening { animation: envRip 1.3s cubic-bezier(.3,.7,.4,1) forwards; }
-    @keyframes envRip { 0% { transform: scale(1) rotate(0deg); filter: drop-shadow(0 24px 50px rgba(0,0,0,.45)); } 30% { transform: scale(1.09) rotate(2deg); filter: drop-shadow(0 30px 60px rgba(0,0,0,.55)) drop-shadow(0 0 34px rgba(201,168,76,.55)); } 60% { transform: scale(1.28) translateY(-14px) rotate(-2deg); filter: drop-shadow(0 34px 66px rgba(0,0,0,.6)) drop-shadow(0 0 50px rgba(201,168,76,.8)); } 100% { transform: scale(1.7) translateY(-26px); opacity: 0; filter: drop-shadow(0 30px 60px rgba(0,0,0,.5)) drop-shadow(0 0 64px rgba(201,168,76,.9)); } }
+    /* gentle bob so it reads as "alive, tap me" */
+    @keyframes envBob { 0%,100% { transform: translateY(0) rotate(-.4deg); } 50% { transform: translateY(-10px) rotate(.5deg); } }
+    .lottie-envelope:hover { animation: none; transform: scale(1.05) rotate(-1deg); }
+    /* gold light sweeping across the paper — draws the eye to the seal */
+    .lottie-envelope::after {
+        content: ''; position: absolute; inset: 0; z-index: 2; pointer-events: none;
+        background: linear-gradient(115deg, transparent 34%, rgba(255,246,214,.42) 47%, rgba(255,246,214,.10) 52%, transparent 64%);
+        mix-blend-mode: screen;
+        transform: translateX(-120%);
+        animation: envSheen 4.6s ease-in-out 1.2s infinite;
+    }
+    @keyframes envSheen { 0% { transform: translateX(-120%); } 28%,100% { transform: translateX(120%); } }
     .lottie-envelope svg { width: 100%; height: 100%; display: block; }
     /* graceful fallback if the animation file can't load */
     .lottie-envelope.lottie-failed::before { content: '💌'; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 96px; }
-    .env-tap { margin-top: 34px; color: rgba(255,255,255,.75); font-size: 12px; letter-spacing: .28em; text-transform: uppercase; display: flex; align-items: center; gap: 10px; animation: tapPulse 1.8s ease-in-out infinite; }
-    .env-tap::before, .env-tap::after { content: ''; width: 34px; height: 1px; background: linear-gradient(to right, transparent, rgba(201,168,76,.8)); }
-    .env-tap::after { background: linear-gradient(to left, transparent, rgba(201,168,76,.8)); }
+    .env-tap {
+        margin-top: 30px; color: #f3d98b; font-size: 12.5px; letter-spacing: .26em; text-transform: uppercase;
+        display: inline-flex; align-items: center; gap: 10px;
+        padding: 13px 26px; border-radius: 999px;
+        border: 1px solid rgba(201,168,76,.5); background: rgba(201,168,76,.10);
+        -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+        box-shadow: 0 0 0 0 rgba(201,168,76,.45);
+        animation: tapPulse 1.8s ease-in-out infinite, tapRing 2.4s ease-out infinite;
+    }
+    .env-tap i { font-size: 17px; }
+    @keyframes tapRing { 0% { box-shadow: 0 0 0 0 rgba(201,168,76,.45); } 70% { box-shadow: 0 0 0 16px rgba(201,168,76,0); } 100% { box-shadow: 0 0 0 0 rgba(201,168,76,0); } }
     @keyframes tapPulse { 0%,100% { opacity: .55; } 50% { opacity: 1; } }
 
     /* ═══ Reveal photo frame ═══ */
@@ -925,7 +965,21 @@
     .scratch-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
     .scratch-fallback { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; color: #c9a84c; font-size: 15px; }
     .scratch-fallback i { font-size: 44px; }
-    .reveal-cover { position: absolute; inset: 0; z-index: 4; display: flex; align-items: center; justify-content: center; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; background: radial-gradient(circle at 32% 20%, rgba(255,255,255,.35), transparent 42%), linear-gradient(160deg, #eed9a0, #c9a84c 55%, #a27f2e); color: rgba(20,45,32,.9); transition: opacity .5s ease, transform .5s ease; }
+    .reveal-cover { position: absolute; inset: 0; z-index: 4; display: flex; align-items: center; justify-content: center; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; background: radial-gradient(circle at 32% 20%, rgba(255,255,255,.35), transparent 42%), linear-gradient(160deg, #eed9a0, #c9a84c 55%, #a27f2e); color: rgba(20,45,32,.9); transition: opacity .5s ease, transform .5s ease; overflow: hidden; }
+    /* moving light sweep + tiny sparkles keep the cover alive and tappable */
+    .reveal-cover::after {
+        content: ''; position: absolute; inset: -30%; pointer-events: none;
+        background: linear-gradient(115deg, transparent 36%, rgba(255,255,255,.45) 48%, transparent 60%);
+        transform: translateX(-70%);
+        animation: coverSheen 3.4s ease-in-out infinite;
+    }
+    @keyframes coverSheen { 0% { transform: translateX(-70%); } 55%,100% { transform: translateX(70%); } }
+    .reveal-cover .reveal-cover-inner { animation: coverBreathe 2.6s ease-in-out infinite; }
+    @keyframes coverBreathe { 0%,100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+    /* white petals raining down behind the gold — it feels like a gift */
+    .cover-petals { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+    .cover-petals span { position: absolute; top: -12%; font-size: 15px; color: rgba(255,255,255,.9); text-shadow: 0 0 6px rgba(255,255,255,.5); animation: coverPetalFall var(--pd, 3.2s) linear var(--pdl, 0s) infinite; opacity: 0; }
+    @keyframes coverPetalFall { 0% { opacity: 0; transform: translateY(-10%) rotate(0deg); } 12% { opacity: .95; } 100% { opacity: 0; transform: translateY(760%) rotate(240deg); } }
     .reveal-cover.open { opacity: 0; transform: scale(1.12); pointer-events: none; }
     .reveal-cover-inner { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; padding: 18px; }
     .reveal-tap-icon { font-size: 34px; animation: tapPulse 1.8s ease-in-out infinite; }
@@ -949,7 +1003,8 @@
     #intro-spark { position: absolute; left: 50%; top: 50%; width: 0; height: 0; z-index: 6; pointer-events: none; }
     .spark-bit { position: absolute; left: 0; top: 0; font-style: normal; color: #f3d98b; opacity: 0; animation: sparkFly .95s ease-out forwards; }
     .spark-bit.spark-heart { color: #fff; }
-    @keyframes sparkFly { 0% { opacity: 0; transform: translate(-50%,-50%) scale(.4); } 15% { opacity: 1; } 100% { opacity: 0; transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(var(--sc)); } }
+    .spark-bit.spark-petal { color: #fff; text-shadow: 0 0 8px rgba(255,255,255,.6), 0 0 16px rgba(243,217,139,.5); animation-duration: 1.4s; }
+    @keyframes sparkFly { 0% { opacity: 0; transform: translate(-50%,-50%) scale(.4) rotate(0deg); } 15% { opacity: 1; } 100% { opacity: 0; transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(var(--sc)) rotate(var(--spin, 0deg)); } }
     /* (skip button removed — the intro plays in full) */
     /* Replay pill — floats above the page after the intro, so guests can watch it again */
     .intro-replay { position: fixed; bottom: max(84px, calc(env(safe-area-inset-bottom, 0px) + 84px)); left: 50%; transform: translateX(-50%) translateY(8px); z-index: 60; display: inline-flex; align-items: center; gap: 7px; background: rgba(13,31,21,.72); border: 1px solid rgba(201,168,76,.45); color: rgba(255,255,255,.85); font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase; padding: 8px 16px; border-radius: 999px; cursor: pointer; opacity: 0; pointer-events: none; transition: all .35s ease; -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); box-shadow: 0 10px 26px rgba(0,0,0,.3); }
@@ -982,7 +1037,10 @@
     @media (min-width: 768px) { .sound-toggle { bottom: 24px; left: 24px; } }
 
     @media (prefers-reduced-motion: reduce) {
-        .lottie-envelope, .intro-popup, .spark-bit, .reveal-tap-icon, .scroll-teaser, .env-glow { animation: none !important; }
+        .lottie-envelope, .intro-popup, .spark-bit, .reveal-tap-icon, .scroll-teaser, .env-glow,
+        .intro-petal, .cover-petals, .env-tap, .reveal-cover::after, .lottie-envelope::after,
+        .reveal-cover .reveal-cover-inner { animation: none !important; }
+        #intro-petals, .cover-petals { display: none; }
         .intro-popup { opacity: .9; transform: translate(-50%,-50%) scale(1); }
         /* opening is animation-driven — fall back to a simple fade so it still disappears */
         .lottie-envelope.opening { opacity: 0 !important; transform: scale(1.22) translateY(-10px); }
@@ -993,14 +1051,17 @@
 @push('scripts')
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
 <script>
-/* ═══ Sounds — soft synthesized chimes + a quiet music-box loop ═══
-   Everything is generated with WebAudio, so there are no audio files to
-   load or license. Volumes stay deliberately low; the toggle remembers. */
+/* ═══ Sounds — warm acoustic fingerpicking + soft chimes ═══
+   The music is a live Karplus–Strong nylon-string guitar (no audio files,
+   nothing to license): a slow G – D/F# – Em7 – Cadd9 picking pattern with
+   the gentle sway of a first dance. If the organizers drop a licensed
+   track at storage/music/first-dance.mp3 it plays instead, still behind
+   the same toggle. Volumes stay low; the choice is remembered. */
 const WedSound = (function () {
-    let ctx = null, master = null, musicBus = null;
-    let muted = false, musicOn = false, musicTimer = 0, nextNoteAt = 0;
-    let chord = 0, step = 0;
-    try { muted = localStorage.getItem('wedSoundMuted') === '1'; } catch (e) {}
+    let ctx = null, master = null, musicBus = null, verb = null, verbSend = null;
+    let muted = true, musicOn = false, musicTimer = 0, nextNoteAt = 0; /* audio off by request */
+    let chord = 0, step = 0, track = null, trackTried = false;
+    const TRACK_URL = '{{ asset('storage/music/first-dance.mp3') }}';
 
     function ensure() {
         if (ctx) { if (ctx.state === 'suspended') ctx.resume().catch(function () {}); return ctx; }
@@ -1013,6 +1074,18 @@ const WedSound = (function () {
         musicBus = ctx.createGain();
         musicBus.gain.value = 0.0001;
         musicBus.connect(master);
+        /* a small warm room — generated impulse through a convolver */
+        try {
+            const irLen = Math.floor(ctx.sampleRate * 1.7);
+            const ir = ctx.createBuffer(2, irLen, ctx.sampleRate);
+            for (let ch = 0; ch < 2; ch++) {
+                const d = ir.getChannelData(ch);
+                for (let i = 0; i < irLen; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / irLen, 2.6);
+            }
+            verb = ctx.createConvolver(); verb.buffer = ir;
+            verbSend = ctx.createGain(); verbSend.gain.value = 0.28;
+            verbSend.connect(verb); verb.connect(master);
+        } catch (e) { verb = null; verbSend = null; }
         return ctx;
     }
 
@@ -1040,35 +1113,76 @@ const WedSound = (function () {
         o2.start(t); o2.stop(t + dur * 0.65 + 0.05);
     }
 
-    function arp(freqs, gap, dur, vol) {
-        if (!ensure()) return;
-        const t0 = ctx.currentTime + 0.03;
-        freqs.forEach(function (f, i) { tone(f, t0 + i * gap, dur, vol); });
+    /* — Karplus–Strong nylon string: a real plucked-guitar timbre — */
+    const pluckCache = {};
+    function pluckBuffer(freq) {
+        const key = Math.round(freq);
+        if (pluckCache[key]) return pluckCache[key];
+        const sr = ctx.sampleRate;
+        const N = Math.max(2, Math.round(sr / freq));
+        const dur = 2.6, len = Math.floor(sr * dur);
+        const buf = ctx.createBuffer(1, len, sr);
+        const out = buf.getChannelData(0);
+        const ring = new Float32Array(N);
+        let lp = 0;
+        /* softened noise excitation = warm fingertip, not a plectrum */
+        for (let i = 0; i < N; i++) { lp = 0.55 * lp + 0.45 * (Math.random() * 2 - 1); ring[i] = lp; }
+        let idx = 0, prev = 0;
+        for (let s = 0; s < len; s++) {
+            const cur = ring[idx];
+            out[s] = cur;
+            ring[idx] = (cur + prev) * 0.5 * 0.996;
+            prev = cur;
+            idx = idx + 1 === N ? 0 : idx + 1;
+        }
+        const fade = Math.floor(sr * 0.3);
+        for (let s = 0; s < fade; s++) out[len - fade + s] *= 1 - s / fade;
+        pluckCache[key] = buf;
+        return buf;
     }
 
-    /* quiet music-box arpeggio: a Canon-in-D chord drift */
+    function pick(freq, when, vol, bus) {
+        if (!ensure()) return;
+        const t = Math.max(when || 0, ctx.currentTime) + 0.01;
+        const src = ctx.createBufferSource();
+        src.buffer = pluckBuffer(freq);
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(vol, t);
+        src.connect(g); g.connect(bus || master);
+        if (verbSend) g.connect(verbSend);
+        src.start(t);
+    }
+
+    function strum(freqs, vol, gap) {
+        if (!ensure()) return;
+        const t0 = ctx.currentTime + 0.02;
+        freqs.forEach(function (f, i) { pick(f, t0 + i * (gap || 0.045), vol * (1 - i * 0.06)); });
+    }
+
+    /* slow first-dance picking: G – D/F# – Em7 – Cadd9 (bass + inner strings) */
     const CHORDS = [
-        [293.66, 369.99, 440.00, 587.33], // D
-        [277.18, 329.63, 440.00, 554.37], // A
-        [246.94, 293.66, 369.99, 493.88], // Bm
-        [277.18, 369.99, 440.00, 554.37], // F#m
-        [246.94, 293.66, 392.00, 493.88], // G
-        [293.66, 369.99, 440.00, 587.33], // D
-        [246.94, 293.66, 392.00, 493.88], // G
-        [277.18, 329.63, 440.00, 554.37], // A
+        [98.00, 246.94, 293.66, 392.00],   // G
+        [92.50, 220.00, 293.66, 369.99],   // D/F#
+        [82.41, 246.94, 293.66, 392.00],   // Em7
+        [130.81, 196.00, 293.66, 329.63],  // Cadd9
     ];
-    const STEP = 0.8; /* seconds between notes — slow and airy */
+    const STEP = 0.46; /* unhurried eighth-note sway */
 
     function musicTick() {
-        if (!musicOn || !ctx) return;
+        if (!musicOn || !ctx || track) return; /* real track takes over when present */
         while (nextNoteAt < ctx.currentTime + 1.2) {
             const c = CHORDS[chord];
-            const order = [0, 1, 2, 3, 2, 1];
-            tone(c[order[step % order.length]], nextNoteAt, 2.6, 0.05, 'triangle', musicBus);
-            if (step % 6 === 0) tone(c[0] / 2, nextNoteAt, 3.4, 0.05, 'sine', musicBus);
+            const pattern = [0, 2, 3, 1, 2, 3, 1, 2]; /* bass–mid–high fingerpicking */
+            const i = step % pattern.length;
+            const jitter = (Math.random() - 0.5) * 0.012; /* human feel */
+            pick(c[pattern[i]], nextNoteAt + jitter, i === 0 ? 0.085 : 0.062, musicBus);
+            /* sparse melody sparkle every other bar */
+            if (i === 3 && (step / pattern.length) % 2 === 1) {
+                pick(c[3] * 1.5, nextNoteAt + 0.2, 0.04, musicBus);
+            }
             nextNoteAt += STEP;
             step++;
-            if (step % order.length === 0) chord = (chord + 1) % CHORDS.length;
+            if (i === pattern.length - 1) chord = (chord + 1) % CHORDS.length;
         }
     }
 
@@ -1115,29 +1229,58 @@ const WedSound = (function () {
         else if (!muted) { ctx.resume().catch(function () {}); }
     });
 
+    /* a licensed first-dance track wins over the synth, when present */
+    let trackEl = null;
+    function tryTrack() {
+        if (trackEl || trackTried) return !!trackEl;
+        trackTried = true;
+        try {
+            const a = new Audio();
+            a.preload = 'metadata';
+            a.loop = true;
+            a.volume = 0;
+            a.addEventListener('canplay', function () { trackEl = a; }, { once: true });
+            a.addEventListener('error', function () { trackEl = null; });
+            a.src = TRACK_URL;
+        } catch (e) { trackEl = null; }
+        return !!trackEl;
+    }
+
     const api = {
         bindToggle: bindToggle,
-        envelope: function () { if (!muted) arp([523.25, 659.25, 783.99, 1046.50], 0.11, 1.3, 0.07); },
-        reveal:   function () { if (!muted) arp([392.00, 587.33, 783.99], 0.09, 1.6, 0.08); },
-        pop:      function (i) { if (!muted && ensure()) tone(660 + (i % 5) * 90, 0, 0.45, 0.04, 'sine'); },
-        inviteOpen: function () { if (!muted) arp([659.25, 783.99], 0.1, 1.1, 0.06); },
-        success:  function () { if (!muted) arp([523.25, 659.25, 1046.50], 0.13, 1.5, 0.07); },
+        envelope: function () { if (!muted) { strum([196.00, 246.94, 293.66, 392.00], 0.09, 0.05); } },   /* soft G up-stroke */
+        reveal:   function () { if (!muted) { strum([196.00, 293.66, 392.00, 493.88], 0.085, 0.06); } }, /* Gsus-ish lift */
+        pop:      function (i) { if (!muted) pick([329.63, 392.00, 440.00, 493.88, 587.33][i % 5], 0, 0.05); },
+        inviteOpen: function () { if (!muted) { strum([164.81, 246.94, 329.63], 0.08, 0.07); } },        /* Em7 shimmer */
+        success:  function () { if (!muted) { strum([130.81, 196.00, 261.63, 329.63], 0.085, 0.06); pick(523.25, 0.5, 0.05); } }, /* Cadd9 lift */
         siteOpen: function () {
             if (muted) return;
-            arp([659.25, 830.61, 987.77, 1318.51], 0.1, 1.4, 0.06);
+            strum([98.00, 246.94, 293.66, 392.00, 493.88], 0.075, 0.05); /* full G, then sway in */
             api.startMusic();
         },
         startMusic: function () {
             if (muted || musicOn || !ensure()) return;
             musicOn = true;
+            if (tryTrack()) {
+                trackEl.play().catch(function () {});
+                /* fade the track in so it never bursts in */
+                trackEl.volume = 0;
+                const fadeIn = setInterval(function () {
+                    if (!musicOn || !trackEl) { clearInterval(fadeIn); return; }
+                    trackEl.volume = Math.min(0.55, trackEl.volume + 0.02);
+                    if (trackEl.volume >= 0.55) clearInterval(fadeIn);
+                }, 120);
+                return;
+            }
             nextNoteAt = ctx.currentTime + 0.15;
-            musicBus.gain.setTargetAtTime(0.9, ctx.currentTime, 1.2);
+            musicBus.gain.setTargetAtTime(0.9, ctx.currentTime, 1.6);
             musicTick();
             musicTimer = setInterval(musicTick, 400);
         },
         stopMusic: function () {
             musicOn = false;
             clearInterval(musicTimer);
+            if (trackEl) trackEl.pause();
             if (ctx) musicBus.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.25);
         },
     };
@@ -1439,18 +1582,21 @@ function rsvpWizard() {
     function burst() {
         const spark = document.getElementById('intro-spark');
         if (!spark || reduce) return;
-        for (let i = 0; i < 24; i++) {
+        const glyphs = ['✦', '♥', '❀', '✿', '✧'];
+        for (let i = 0; i < 34; i++) {
             const b = document.createElement('i');
             const ang = Math.random() * Math.PI * 2;
-            const dist = 80 + Math.random() * 150;
-            b.className = 'spark-bit' + (i % 5 === 0 ? ' spark-heart' : '');
-            b.textContent = i % 5 === 0 ? '♥' : '✦';
+            const dist = 80 + Math.random() * 180;
+            const g = glyphs[i % glyphs.length];
+            b.className = 'spark-bit' + (g === '♥' ? ' spark-heart' : (g === '❀' || g === '✿' ? ' spark-petal' : ''));
+            b.textContent = g;
             b.style.setProperty('--dx', Math.cos(ang) * dist + 'px');
             b.style.setProperty('--dy', (Math.sin(ang) * dist - 30) + 'px');
             b.style.setProperty('--sc', (0.6 + Math.random() * 0.9).toFixed(2));
-            b.style.fontSize = (10 + Math.random() * 9) + 'px';
+            b.style.setProperty('--spin', ((Math.random() * 300 - 150) | 0) + 'deg');
+            b.style.fontSize = (10 + Math.random() * 10) + 'px';
             spark.appendChild(b);
-            setTimeout(() => { if (b.parentNode) b.parentNode.removeChild(b); }, 1200);
+            setTimeout(() => { if (b.parentNode) b.parentNode.removeChild(b); }, 1400);
         }
     }
 
@@ -1536,11 +1682,27 @@ function rsvpWizard() {
         if (!cover) { playPopups(); return; }
         if (cover.dataset.bound) return; /* listeners already attached */
         cover.dataset.bound = '1';
+        /* white petals raining down the gold cover — it feels like unwrapping a gift */
+        if (!reduce && !cover.querySelector('.cover-petals')) {
+            const rain = document.createElement('div');
+            rain.className = 'cover-petals';
+            rain.setAttribute('aria-hidden', 'true');
+            for (let i = 0; i < 10; i++) {
+                const s = document.createElement('span');
+                s.textContent = i % 3 === 0 ? '❀' : '✿';
+                s.style.left = (4 + Math.random() * 92) + '%';
+                s.style.setProperty('--pd', (2.6 + Math.random() * 2.4).toFixed(1) + 's');
+                s.style.setProperty('--pdl', (-Math.random() * 4).toFixed(1) + 's');
+                rain.appendChild(s);
+            }
+            cover.insertBefore(rain, cover.firstChild);
+        }
         const go = () => {
             cover.classList.add('open');
             if (flash) flash.classList.add('go');
             if (img) img.classList.add('pop');
             WedSound.reveal();
+            burst(); /* petals + sparks as the photo appears */
             setTimeout(playPopups, 500);
         };
         cover.addEventListener('click', go, { once: true });

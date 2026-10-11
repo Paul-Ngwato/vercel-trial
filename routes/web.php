@@ -20,16 +20,29 @@ use App\Http\Controllers\Admin\InformationController;
 use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\IntroPhotoController;
 
-// ── Uploaded photos in object storage (PUBLIC_DISK=s3) ──
-// Templates link to /storage/...; with no public/storage symlink (e.g. on Vercel)
-// those requests are sent on to the bucket.
-if (config('filesystems.disks.public.driver') === 's3') {
-    Route::get('/storage/{path}', fn (string $path) => redirect()->away(
-        Storage::disk('public')->url($path),
-        302,
-        ['Cache-Control' => 'public, max-age=86400'],
-    ))->where('path', '.*');
-}
+// ── Uploaded photos: /storage/… ──
+// Static files (committed assets, public/storage link) are served before PHP
+// ever runs (Vercel's "filesystem" handle / php -S), so this route only sees
+// misses: with PUBLIC_DISK=s3 we redirect to the bucket, otherwise we read
+// through the disk (PUBLIC_DISK=db keeps bytes in the database).
+Route::get('/storage/{path}', function (string $path) {
+    // never resolve parent-directory segments
+    abort_unless(! str_contains(str_replace('\\', '/', $path), '..'), 404);
+
+    $disk = Storage::disk('public');
+
+    if (config('filesystems.disks.public.driver') === 's3') {
+        return redirect()->away($disk->url($path), 302, ['Cache-Control' => 'public, max-age=86400']);
+    }
+
+    abort_unless($disk->exists($path), 404);
+
+    return response($disk->get($path), 200, [
+        'Content-Type' => $disk->mimeType($path) ?: 'application/octet-stream',
+        'Content-Disposition' => 'inline; filename="' . basename($path) . '"',
+        'Cache-Control' => 'public, max-age=604800',
+    ]);
+})->where('path', '.*');
 
 // ── Public: one-page site ──
 Route::get('/', HomeController::class)->name('home');

@@ -291,6 +291,39 @@
                 </div>
             </div>
         </div>
+
+        {{-- Organizer --}}
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <h3 class="font-semibold text-gray-800 mb-4">Organizers</h3>
+            <p class="text-xs text-gray-400 mb-4">The people and details listeners should contact for this celebration.</p>
+            <div class="grid sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                    <input type="text" name="organizer_name" value="{{ $wedding->organizer_name }}" placeholder="e.g., Sarah Wanjiku"
+                           class="w-full px-4 py-2 rounded-lg border border-gray-300 text-sm focus:border-green-700 outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                    <input type="text" name="organizer_role" value="{{ $wedding->organizer_role }}" placeholder="e.g., Wedding Coordinator"
+                           class="w-full px-4 py-2 rounded-lg border border-gray-300 text-sm focus:border-green-700 outline-none">
+                </div>
+                <div class="sm:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input type="email" name="organizer_email" value="{{ $wedding->organizer_email }}" placeholder="organizer@example.com"
+                           class="w-full px-4 py-2 rounded-lg border border-gray-300 text-sm focus:border-green-700 outline-none">
+                </div>
+                <div class="sm:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                    <input type="text" name="organizer_phone" value="{{ $wedding->organizer_phone }}" placeholder="+254 700 123 456"
+                           class="w-full px-4 py-2 rounded-lg border border-gray-300 text-sm focus:border-green-700 outline-none">
+                </div>
+                <div class="sm:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">About / How to reach them</label>
+                    <textarea name="organizer_info" rows="4" placeholder="A short note on who to contact for what…"
+                              class="w-full px-4 py-2 rounded-lg border border-gray-300 text-sm focus:border-green-700 outline-none resize-none">{{ $wedding->organizer_info }}</textarea>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="mt-6">

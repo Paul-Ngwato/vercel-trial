@@ -4,7 +4,9 @@
 !.env.example
 
 # Installed by Vercel / not needed at runtime
-vendor
+# (anchored to the repo root ONLY — public/vendor holds the envelope
+#  animation the intro needs, and it must ship to Vercel)
+/vendor
 node_modules
 tests
 phpunit.xml

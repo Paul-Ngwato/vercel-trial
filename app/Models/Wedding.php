@@ -17,7 +17,9 @@ class Wedding extends Model
         'dress_code', 'rsvp_deadline', 'family_bride_info', 'family_groom_info',
         'meta_title', 'meta_description', 'meta_image_path',
         'primary_color', 'secondary_color', 'bg_color', 'accent_color',
-        'contact_email', 'contact_phone', 'is_active',
+        'contact_email', 'contact_phone',
+        'organizer_name', 'organizer_role', 'organizer_email', 'organizer_phone', 'organizer_info',
+        'is_active',
     ];
 
     protected $casts = [

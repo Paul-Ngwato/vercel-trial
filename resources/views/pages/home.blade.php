@@ -51,6 +51,7 @@
 
     {{-- Popup photos — always inside the screen frame --}}    <div id="intro-popups" aria-hidden="true"></div>
     <button id="intro-replay" class="intro-replay" type="button" hidden><i class="bi bi-arrow-counterclockwise"></i> Replay intro</button>
+    <button id="sound-toggle" class="sound-toggle" type="button" aria-pressed="true" title="Sound on / off" aria-label="Toggle sound"><i class="bi bi-volume-up-fill"></i></button>
 </div>
 
 {{-- ═══════════════════════ HERO ═══════════════════════ --}}
@@ -58,6 +59,16 @@
     <div class="stars-container absolute inset-0" id="starsContainer"></div>
     <div class="absolute -top-44 left-1/2 -translate-x-1/2 w-[44rem] h-[44rem] rounded-full bg-secondary/10 blur-3xl pointer-events-none"></div>
     <div class="absolute -bottom-40 -right-32 w-[30rem] h-[30rem] rounded-full bg-secondary/10 blur-3xl pointer-events-none"></div>
+
+    {{-- Wedding florals: white rose petals drifting down the hero --}}
+    <div id="flower-overlay" aria-hidden="true">
+        @php $flowerTypes = ['✿', '❀', '💐', '🌹', '🍀', '✾', '❁', '❧', '✺', '✾']; @endphp
+        @foreach (range(1, 34) as $i)
+            <span class="flower petal" style="--i:{{ $i }};--x:{{ (70 + rand(-18, 18)) }}%;--t:{{ rand(2, 12) }}s;--r:{{ rand(0, 360) }}deg;--d:{{ rand(6, 16) }}s;">
+                {{ $flowerTypes[$i % count($flowerTypes)] }}
+            </span>
+        @endforeach
+    </div>
 
     <div class="relative z-10 text-center px-6 pt-14 sm:pt-20 pb-6 w-full max-w-4xl mx-auto">
         <div class="flex items-center justify-center gap-4 mb-5 sm:mb-7">
@@ -401,9 +412,13 @@
 {{-- ═══ Invitation modal — the paper invite, openable anytime from the hero ═══ --}}
 <div id="invite-modal" class="invite-modal" style="display:none;" aria-hidden="true">
     <div class="invite-modal-inner">
-        <div id="invitation-card" class="invite-card" data-names="{{ $wedding->full_title ?? 'wedding' }}">
+        <div id="invitation-card" class="invite-card" data-names="{{ $wedding->full_title ?? 'wedding' }}" data-date="{{ $wedding->wedding_date?->format('F j, Y') ?? '' }}">
             @if($wedding->logo_path)
                 <img src="{{ asset('storage/' . $wedding->logo_path) }}" alt="Wedding logo" class="ic-logo">
+            @elseif($wedding->bride_name && $wedding->groom_name)
+                <div class="ic-monogram font-playfair" aria-hidden="true">
+                    {{ mb_substr($wedding->bride_name, 0, 1) }}<span>&amp;</span>{{ mb_substr($wedding->groom_name, 0, 1) }}
+                </div>
             @endif
             <div class="ic-ornament"><span></span><i class="bi bi-heart-fill"></i><span></span></div>
             <p class="ic-eyebrow">The wedding celebration of</p>
@@ -420,6 +435,8 @@
             @endif
             @if($wedding->invitation_message)
                 <p class="ic-message">{{ $wedding->invitation_message }}</p>
+            @else
+                <p class="ic-message">Together with their families, {{ $wedding->bride_name ?? 'they' }} &amp; {{ $wedding->groom_name ?? '' }} invite you to share in their joy as they exchange vows.</p>
             @endif
             <div class="ic-divider" aria-hidden="true"><span></span><i class="bi bi-flower1"></i><span></span></div>
             @if($wedding->wedding_date)
@@ -434,8 +451,33 @@
             @if($wedding->wedding_time)
                 <p class="ic-time">at {{ \Carbon\Carbon::parse($wedding->wedding_time)->format('g:i A') }}</p>
             @endif
-            @if($wedding->ceremony_venue)
-                <p class="ic-venue"><i class="bi bi-geo-alt-fill"></i> {{ $wedding->ceremony_venue }}</p>
+            @if($wedding->ceremony_venue || $wedding->reception_venue)
+                <div class="ic-places">
+                    @if($wedding->ceremony_venue)
+                        <div class="ic-place">
+                            <p class="ic-place-label">The Ceremony</p>
+                            <p class="ic-venue"><i class="bi bi-geo-alt-fill"></i> {{ $wedding->ceremony_venue }}</p>
+                            @if($wedding->ceremony_address)<p class="ic-addr">{{ $wedding->ceremony_address }}</p>@endif
+                        </div>
+                    @endif
+                    @if($wedding->reception_venue)
+                        <div class="ic-place">
+                            <p class="ic-place-label">Reception to follow</p>
+                            <p class="ic-venue"><i class="bi bi-cup"></i> {{ $wedding->reception_venue }}</p>
+                            @if($wedding->reception_address)<p class="ic-addr">{{ $wedding->reception_address }}</p>@endif
+                        </div>
+                    @endif
+                </div>
+            @endif
+            @if($wedding->dress_code || $wedding->rsvp_deadline)
+                <div class="ic-facts">
+                    @if($wedding->dress_code)
+                        <span class="ic-fact"><i class="bi bi-stars"></i> {{ $wedding->dress_code }}</span>
+                    @endif
+                    @if($wedding->rsvp_deadline)
+                        <span class="ic-fact"><i class="bi bi-calendar-check"></i> RSVP by {{ \Carbon\Carbon::parse($wedding->rsvp_deadline)->format('j M Y') }}</span>
+                    @endif
+                </div>
             @endif
             @if($wedding->family_bride_info || $wedding->family_groom_info)
                 <div class="ic-families">
@@ -452,7 +494,7 @@
             <div class="ic-ornament"><span></span><i class="bi bi-gem"></i><span></span></div>
         </div>
         <div class="invite-modal-actions">
-            <button type="button" id="invite-modal-download" class="invite-btn invite-btn-gold"><i class="bi bi-download"></i> Save Invitation</button>
+            <button type="button" id="invite-modal-download" class="invite-btn invite-btn-gold"><i class="bi bi-file-earmark-pdf"></i> Save as PDF</button>
             <button type="button" id="invite-modal-close" class="invite-btn invite-btn-ghost">Close</button>
         </div>
     </div>
@@ -486,6 +528,70 @@
     .ornament span { width: 56px; height: 1px; background: linear-gradient(to right, transparent, rgba(201,168,76,.7)); }
     .ornament span:last-child { background: linear-gradient(to left, transparent, rgba(201,168,76,.7)); }
     .ornament i { color: #c9a84c; font-size: 13px; }
+
+    /* ═══ Wedding florals: white petals drift down the hero ═══ */
+    #flower-overlay { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
+    #flower-overlay .petal {
+        position: absolute;
+        font-size: clamp(1.2rem, 2.4vw, 2.2rem);
+        color: #fdf8f0;
+        text-shadow:
+            0 0 6px rgba(253, 248, 240, .55),
+            0 0 18px rgba(253, 248, 240, .22),
+            0 0 34px rgba(201, 168, 76, .12);
+        animation:
+            driftDown var(--d, 9s) ease-in infinite,
+            floatHue var(--t, 9s) linear infinite;
+        opacity: 0;
+        user-select: none;
+        pointer-events: none;
+    }
+    #flower-overlay .petal:nth-child(3n) { color: #f0e0d0; text-shadow: 0 0 4px rgba(240, 224, 208, .45); }
+    #flower-overlay .petal:nth-child(5n) { color: #ffffff; text-shadow: 0 0 8px rgba(255, 255, 255, .6); }
+    @keyframes driftDown {
+        0%   { opacity: 0; transform: translateY(-20px) rotate(var(--r, 0deg)) scale(0.6); }
+        12%  { opacity: 1; }
+        100% { opacity: 0; transform: translateY(108vh) rotate(var(--r, 0deg)) scale(1.35); }
+    }
+    @keyframes floatHue {
+        0%, 100% { filter: hue-rotate(0deg); opacity: 1; }
+        50%      { filter: hue-rotate(7deg); opacity: .92; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        #flower-overlay { display: none; }
+    }
+
+    /* ═══ Wedding florals: white petals drift down the hero ═══ */
+    #flower-overlay { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
+    #flower-overlay .petal {
+        position: absolute;
+        font-size: clamp(1.2rem, 2.4vw, 2.2rem);
+        color: #fdf8f0;
+        text-shadow:
+            0 0 6px rgba(253, 248, 240, .55),
+            0 0 18px rgba(253, 248, 240, .22),
+            0 0 34px rgba(201, 168, 76, .12);
+        animation:
+            driftDown var(--d, 9s) ease-in infinite,
+            floatHue var(--t, 9s) linear infinite;
+        opacity: 0;
+        user-select: none;
+        pointer-events: none;
+    }
+    #flower-overlay .petal:nth-child(3n) { color: #f0e0d0; text-shadow: 0 0 4px rgba(240, 224, 208, .45); }
+    #flower-overlay .petal:nth-child(5n) { color: #ffffff; text-shadow: 0 0 8px rgba(255, 255, 255, .6); }
+    @keyframes driftDown {
+        0%   { opacity: 0; transform: translateY(-20px) rotate(var(--r, 0deg)) scale(0.6); }
+        12%  { opacity: 1; }
+        100% { opacity: 0; transform: translateY(108vh) rotate(var(--r, 0deg)) scale(1.35); }
+    }
+    @keyframes floatHue {
+        0%, 100% { filter: hue-rotate(0deg); opacity: 1; }
+        50%      { filter: hue-rotate(7deg); opacity: .92; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        #flower-overlay { display: none; }
+    }
 
     /* ═══ Scroll teaser ═══ */
     .scroll-teaser { position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); z-index: 10; color: rgba(255,255,255,.55); font-size: 10px; letter-spacing: .25em; text-transform: uppercase; display: flex; flex-direction: column; align-items: center; gap: 2px; animation: teaserBob 2.2s ease-in-out infinite; }
@@ -615,7 +721,11 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        background: linear-gradient(160deg, #fffdf6, #f7efdb);
+        background:
+            radial-gradient(circle at 50% -8%, rgba(243,217,139,.4), transparent 46%),
+            radial-gradient(circle at 112% 108%, rgba(201,168,76,.16), transparent 42%),
+            repeating-linear-gradient(45deg, rgba(201,168,76,.03) 0 2px, transparent 2px 7px),
+            linear-gradient(160deg, #fffdf6, #f7efdb);
         border: 1px solid rgba(201,168,76,.45);
         border-radius: 12px;
         padding: 34px 26px;
@@ -640,6 +750,10 @@
         .ic-time { font-size: 12.5px; }
         .ic-venue { font-size: 14px; }
         .ic-families p { font-size: 12.5px; }
+        .ic-monogram { width: 64px; height: 64px; font-size: 24px; }
+        .ic-place-label { font-size: 10px; }
+        .ic-addr { font-size: 12.5px; }
+        .ic-fact { font-size: 10.5px; }
         .ic-rsvp { font-size: 11.5px; padding: 11px 26px; }
         .ic-corner { width: 30px; height: 30px; }
     }
@@ -724,6 +838,43 @@
     .ic-venue i { color: #c9a84c; margin-right: 4px; }
     .ic-families { margin-top: 16px; display: flex; flex-direction: column; gap: 6px; }
     .ic-families p { color: #6d6552; font-size: 11.5px; line-height: 1.6; }
+
+    /* gold monogram when the couple has no logo uploaded */
+    .ic-monogram {
+        width: 56px; height: 56px; margin-top: 8px;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 21px; color: #1a3c2a;
+        background: radial-gradient(circle at 32% 26%, rgba(243,217,139,.5), rgba(201,168,76,.14));
+        border: 1.5px solid rgba(201,168,76,.75);
+        box-shadow: 0 6px 16px rgba(201,168,76,.28), inset 0 0 0 3px #fffdf6, inset 0 0 0 4px rgba(201,168,76,.4);
+    }
+    .ic-monogram span { color: #c9a84c; font-style: italic; margin: 0 .08em; }
+
+    /* ceremony / reception blocks — hairline-caps label, venue, address */
+    .ic-places { margin-top: 14px; display: flex; flex-direction: column; gap: 12px; width: 100%; align-items: center; }
+    .ic-place { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+    .ic-place + .ic-place { padding-top: 12px; border-top: 1px dashed rgba(201,168,76,.45); width: 82%; }
+    .ic-place-label {
+        display: inline-flex; align-items: center; gap: 9px;
+        font-size: 9.5px; letter-spacing: .3em; text-transform: uppercase; color: #9c937c;
+    }
+    .ic-place-label::before, .ic-place-label::after { content: ''; width: 26px; height: 1px; background: linear-gradient(to right, transparent, rgba(201,168,76,.75)); }
+    .ic-place-label::after { background: linear-gradient(to left, transparent, rgba(201,168,76,.75)); }
+    .ic-place .ic-venue { margin-top: 3px; }
+    .ic-addr { color: #8a7f63; font-size: 11.5px; font-style: italic; }
+
+    /* dress code / RSVP-by chips */
+    .ic-facts { margin-top: 15px; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+    .ic-fact {
+        display: inline-flex; align-items: center; gap: 6px;
+        font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+        color: #6d5f3c;
+        background: rgba(243,217,139,.35);
+        border: 1px solid rgba(201,168,76,.35);
+        padding: 6px 13px; border-radius: 999px;
+    }
+    .ic-fact i { color: #c9a84c; font-size: 11px; }
     .ic-ornament:last-child { margin-top: 18px; }
     .invite-actions { margin-top: 22px; display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
     .invite-btn {
@@ -812,6 +963,24 @@
         .intro-replay.show { transform: translateY(0); }
     }
 
+    /* ═══ Sound toggle — bottom-left, clear of the mobile bottom nav ═══ */
+    .sound-toggle {
+        position: fixed; left: 16px;
+        bottom: max(84px, calc(env(safe-area-inset-bottom, 0px) + 84px));
+        z-index: 60; width: 42px; height: 42px; border-radius: 50%;
+        border: 1px solid rgba(201,168,76,.45);
+        background: rgba(13,31,21,.72);
+        color: var(--wgold, #c9a84c);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 17px; cursor: pointer;
+        -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+        box-shadow: 0 10px 26px rgba(0,0,0,.3);
+        transition: all .3s ease; -webkit-tap-highlight-color: transparent;
+    }
+    .sound-toggle:hover { border-color: rgba(201,168,76,.9); transform: scale(1.08); }
+    .sound-toggle.is-off { color: rgba(255,255,255,.45); border-color: rgba(255,255,255,.22); }
+    @media (min-width: 768px) { .sound-toggle { bottom: 24px; left: 24px; } }
+
     @media (prefers-reduced-motion: reduce) {
         .lottie-envelope, .intro-popup, .spark-bit, .reveal-tap-icon, .scroll-teaser, .env-glow { animation: none !important; }
         .intro-popup { opacity: .9; transform: translate(-50%,-50%) scale(1); }
@@ -824,6 +993,158 @@
 @push('scripts')
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
 <script>
+/* ═══ Sounds — soft synthesized chimes + a quiet music-box loop ═══
+   Everything is generated with WebAudio, so there are no audio files to
+   load or license. Volumes stay deliberately low; the toggle remembers. */
+const WedSound = (function () {
+    let ctx = null, master = null, musicBus = null;
+    let muted = false, musicOn = false, musicTimer = 0, nextNoteAt = 0;
+    let chord = 0, step = 0;
+    try { muted = localStorage.getItem('wedSoundMuted') === '1'; } catch (e) {}
+
+    function ensure() {
+        if (ctx) { if (ctx.state === 'suspended') ctx.resume().catch(function () {}); return ctx; }
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return null;
+        try { ctx = new AC(); } catch (e) { return null; }
+        master = ctx.createGain();
+        master.gain.value = muted ? 0 : 1;
+        master.connect(ctx.destination);
+        musicBus = ctx.createGain();
+        musicBus.gain.value = 0.0001;
+        musicBus.connect(master);
+        return ctx;
+    }
+
+    /* one soft bell tone (fundamental + a whisper of octave shimmer) */
+    function tone(freq, when, dur, vol, type, bus) {
+        if (!ctx) return;
+        const t = Math.max(when, ctx.currentTime);
+        bus = bus || master;
+        const o = ctx.createOscillator(), g = ctx.createGain();
+        o.type = type || 'sine';
+        o.frequency.setValueAtTime(freq, t);
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(vol, t + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+        o.connect(g); g.connect(bus);
+        o.start(t); o.stop(t + dur + 0.05);
+
+        const o2 = ctx.createOscillator(), g2 = ctx.createGain();
+        o2.type = 'sine';
+        o2.frequency.setValueAtTime(freq * 2, t);
+        g2.gain.setValueAtTime(0.0001, t);
+        g2.gain.exponentialRampToValueAtTime(vol * 0.28, t + 0.02);
+        g2.gain.exponentialRampToValueAtTime(0.0001, t + dur * 0.65);
+        o2.connect(g2); g2.connect(bus);
+        o2.start(t); o2.stop(t + dur * 0.65 + 0.05);
+    }
+
+    function arp(freqs, gap, dur, vol) {
+        if (!ensure()) return;
+        const t0 = ctx.currentTime + 0.03;
+        freqs.forEach(function (f, i) { tone(f, t0 + i * gap, dur, vol); });
+    }
+
+    /* quiet music-box arpeggio: a Canon-in-D chord drift */
+    const CHORDS = [
+        [293.66, 369.99, 440.00, 587.33], // D
+        [277.18, 329.63, 440.00, 554.37], // A
+        [246.94, 293.66, 369.99, 493.88], // Bm
+        [277.18, 369.99, 440.00, 554.37], // F#m
+        [246.94, 293.66, 392.00, 493.88], // G
+        [293.66, 369.99, 440.00, 587.33], // D
+        [246.94, 293.66, 392.00, 493.88], // G
+        [277.18, 329.63, 440.00, 554.37], // A
+    ];
+    const STEP = 0.8; /* seconds between notes — slow and airy */
+
+    function musicTick() {
+        if (!musicOn || !ctx) return;
+        while (nextNoteAt < ctx.currentTime + 1.2) {
+            const c = CHORDS[chord];
+            const order = [0, 1, 2, 3, 2, 1];
+            tone(c[order[step % order.length]], nextNoteAt, 2.6, 0.05, 'triangle', musicBus);
+            if (step % 6 === 0) tone(c[0] / 2, nextNoteAt, 3.4, 0.05, 'sine', musicBus);
+            nextNoteAt += STEP;
+            step++;
+            if (step % order.length === 0) chord = (chord + 1) % CHORDS.length;
+        }
+    }
+
+    function renderToggle() {
+        const btn = document.getElementById('sound-toggle');
+        if (!btn) return;
+        btn.classList.toggle('is-off', muted);
+        btn.setAttribute('aria-pressed', muted ? 'false' : 'true');
+        const i = btn.querySelector('i');
+        if (i) i.className = muted ? 'bi bi-mute-fill' : 'bi bi-volume-up-fill';
+    }
+
+    function bindToggle() {
+        const btn = document.getElementById('sound-toggle');
+        if (!btn || btn.dataset.bound) return;
+        btn.dataset.bound = '1';
+        renderToggle();
+        btn.addEventListener('click', function () {
+            muted = !muted;
+            try { localStorage.setItem('wedSoundMuted', muted ? '1' : '0'); } catch (e) {}
+            ensure();
+            if (ctx) master.gain.setTargetAtTime(muted ? 0 : 1, ctx.currentTime, 0.04);
+            renderToggle();
+            if (!muted) { /* give the toggle an audible response */
+                tone(880, 0, 0.5, 0.05);
+                if (!musicOn) api.startMusic();
+            } else if (musicOn) { api.stopMusic(); }
+        });
+    }
+
+    /* unlock on the first real gesture (autoplay policy) */
+    document.addEventListener('pointerdown', function once() {
+        document.removeEventListener('pointerdown', once);
+        ensure();
+        let seen = false;
+        try { seen = sessionStorage.getItem('weddingIntroSeen') === '1'; } catch (e) {}
+        if (document.querySelector('[data-autoshow]') && !muted) api.success(); /* returned from RSVP/wish */
+        if (seen && !muted) api.startMusic(); /* intro already watched — get straight to it */
+    }, { once: true });
+
+    document.addEventListener('visibilitychange', function () {
+        if (!ctx) return;
+        if (document.hidden) { ctx.suspend().catch(function () {}); }
+        else if (!muted) { ctx.resume().catch(function () {}); }
+    });
+
+    const api = {
+        bindToggle: bindToggle,
+        envelope: function () { if (!muted) arp([523.25, 659.25, 783.99, 1046.50], 0.11, 1.3, 0.07); },
+        reveal:   function () { if (!muted) arp([392.00, 587.33, 783.99], 0.09, 1.6, 0.08); },
+        pop:      function (i) { if (!muted && ensure()) tone(660 + (i % 5) * 90, 0, 0.45, 0.04, 'sine'); },
+        inviteOpen: function () { if (!muted) arp([659.25, 783.99], 0.1, 1.1, 0.06); },
+        success:  function () { if (!muted) arp([523.25, 659.25, 1046.50], 0.13, 1.5, 0.07); },
+        siteOpen: function () {
+            if (muted) return;
+            arp([659.25, 830.61, 987.77, 1318.51], 0.1, 1.4, 0.06);
+            api.startMusic();
+        },
+        startMusic: function () {
+            if (muted || musicOn || !ensure()) return;
+            musicOn = true;
+            nextNoteAt = ctx.currentTime + 0.15;
+            musicBus.gain.setTargetAtTime(0.9, ctx.currentTime, 1.2);
+            musicTick();
+            musicTimer = setInterval(musicTick, 400);
+        },
+        stopMusic: function () {
+            musicOn = false;
+            clearInterval(musicTimer);
+            if (ctx) musicBus.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.25);
+        },
+    };
+    return api;
+})();
+WedSound.bindToggle();
+
 /* ═══ Stars ═══ */
 function createStars() {
     const container = document.getElementById('starsContainer');
@@ -1100,6 +1421,7 @@ function rsvpWizard() {
         if (finished) return;
         finished = true;
         markSeen();
+        WedSound.siteOpen();
         document.body.style.overflow = '';
         intro.classList.remove('env-stage-on', 'photo-stage-on');
         intro.classList.add('is-done');
@@ -1136,6 +1458,7 @@ function rsvpWizard() {
         const env = document.getElementById('intro-envelope');
         if (!env || env.dataset.opened) return;
         env.dataset.opened = '1';
+        WedSound.envelope();
         burst();
         if (window.lottieEnvelope) {
             window.lottieEnvelope.setSpeed(1.6); /* rip it open with energy */
@@ -1199,6 +1522,7 @@ function rsvpWizard() {
                 im.src = src;
                 el.appendChild(im);
                 box.appendChild(el);
+                WedSound.pop(i);
             }, i * 90);
         });
 
@@ -1216,6 +1540,7 @@ function rsvpWizard() {
             cover.classList.add('open');
             if (flash) flash.classList.add('go');
             if (img) img.classList.add('pop');
+            WedSound.reveal();
             setTimeout(playPopups, 500);
         };
         cover.addEventListener('click', go, { once: true });
@@ -1232,7 +1557,27 @@ function rsvpWizard() {
     }
     const skip = null; /* skip button removed — intro plays in full */
 
-    /* ═══ Invitation card: continue + save-as-image ═══ */
+    /* ═══ Invitation card: save as a print-ready A4 PDF ═══ */
+    function loadScriptOnce(src) {
+        window.__wedScripts = window.__wedScripts || {};
+        if (!window.__wedScripts[src]) {
+            window.__wedScripts[src] = new Promise(function (res, rej) {
+                const s = document.createElement('script');
+                s.src = src;
+                s.onload = res;
+                s.onerror = function () { rej(new Error('could not load ' + src)); };
+                document.head.appendChild(s);
+            });
+        }
+        return window.__wedScripts[src];
+    }
+    function ensureHtml2Canvas() {
+        return window.html2canvas ? Promise.resolve() : loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+    }
+    function ensureJsPDF() {
+        return (window.jspdf && window.jspdf.jsPDF) ? Promise.resolve() : loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+    }
+
     function downloadInvitation(btn) {
         const card = document.getElementById('invitation-card');
         if (!card || btn.dataset.busy) return;
@@ -1242,19 +1587,43 @@ function rsvpWizard() {
         const reset = function () { btn.dataset.busy = ''; btn.innerHTML = original; };
 
         const run = function () {
-            /* keep the portrait shape in the saved image even if the text runs long */
+            /* keep the portrait shape in the captured image even if the text runs long */
             const prev = { ar: card.style.aspectRatio, mh: card.style.maxHeight };
             card.style.aspectRatio = 'auto';
             card.style.maxHeight = 'none';
             card.style.minHeight = Math.round(card.offsetWidth * 7 / 5) + 'px';
-            html2canvas(card, { scale: 3, backgroundColor: null, useCORS: true, logging: false })
+            html2canvas(card, { scale: 3, backgroundColor: '#fffdf6', useCORS: true, logging: false })
                 .then(function (canvas) {
                     const names = (card.dataset.names || 'wedding-invitation')
                         .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-                    const link = document.createElement('a');
-                    link.download = names + '-invitation.png';
-                    link.href = canvas.toDataURL('image/png');
-                    link.click();
+                    const { jsPDF } = window.jspdf;
+                    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4', compress: true });
+
+                    /* warm ivory page with a double gold frame */
+                    pdf.setFillColor(253, 248, 240);
+                    pdf.rect(0, 0, 210, 297, 'F');
+                    pdf.setDrawColor(201, 168, 76);
+                    pdf.setLineWidth(0.4);
+                    pdf.rect(5, 5, 200, 287);
+                    pdf.setLineWidth(1.1);
+                    pdf.rect(6.6, 6.6, 196.8, 283.8);
+
+                    /* fit the card inside the frame, keeping its aspect */
+                    const maxW = 184, maxH = 268;
+                    const ratio = canvas.width / canvas.height;
+                    let w = maxW, h = w / ratio;
+                    if (h > maxH) { h = maxH; w = h * ratio; }
+                    pdf.addImage(canvas.toDataURL('image/jpeg', 0.94), 'JPEG',
+                        (210 - w) / 2, (297 - h) / 2, w, h, undefined, 'FAST');
+
+                    const date = (card.dataset.date || '').trim();
+                    if (date) {
+                        pdf.setFont('helvetica', 'normal');
+                        pdf.setFontSize(9);
+                        pdf.setTextColor(150, 140, 110);
+                        pdf.text((card.dataset.names || '') + '  \u00b7  ' + date, 105, 288, { align: 'center' });
+                    }
+                    pdf.save(names + '-invitation.pdf');
                     reset();
                     burst();
                 })
@@ -1266,14 +1635,7 @@ function rsvpWizard() {
                 });
         };
 
-        if (window.html2canvas) { run(); }
-        else {
-            const s = document.createElement('script');
-            s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-            s.onload = run;
-            s.onerror = reset;
-            document.head.appendChild(s);
-        }
+        Promise.all([ensureHtml2Canvas(), ensureJsPDF()]).then(run).catch(reset);
     }
 
     /* ═══ Open the invitation anytime from the hero ═══ */
@@ -1284,6 +1646,7 @@ function rsvpWizard() {
             modal.style.display = 'flex';
             modal.setAttribute('aria-hidden', 'false');
             document.body.style.overflow = 'hidden';
+            WedSound.inviteOpen();
         });
 
         function closeInviteModal() {

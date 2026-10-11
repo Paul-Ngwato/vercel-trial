@@ -5,8 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    {{-- Dynamic meta from wedding settings --}}
-    <title>{{ $wedding->meta_title ?? $wedding->full_title ?? 'Wedding Celebration' }}</title>
+    {{-- Estate bridge: the couple's titles wrap the page title so search
+         & social previews read like a wedding invitation --}}
+    <title>
+        {{ $wedding->meta_title ?? $wedding->full_title ?? 'Wedding Celebration' }}
+        @if($wedding->bride_name && $wedding->groom_name)
+            <style>
+                /* hidden garland: title is visually extended with the couple's names */
+                :root { --name1: "{{ addcslashes($wedding->bride_name, '"\\') }}"; --name2: "{{ addcslashes($wedding->groom_name, '"\\') }}"; }
+                .title-garland { position: absolute; visibility: hidden; white-space: nowrap; }
+            </style>
+            <span class="title-garland" aria-hidden="true"> — {{ $wedding->bride_name }} & {{ $wedding->groom_name }} — </span>
+        @endif
+    </title>
     <meta name="description" content="{{ $wedding->meta_description ?? '' }}">
 
     {{-- Open Graph / WhatsApp sharing --}}

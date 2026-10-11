@@ -16,6 +16,7 @@
             <a href="{{ route('admin.events') }}" class="inline-flex items-center gap-1.5 text-xs font-semibold bg-white/10 hover:bg-white/20 border border-white/15 text-white px-3.5 py-1.5 rounded-full transition-colors"><i class="bi bi-calendar2-week-fill"></i> Schedule</a>
             <a href="{{ route('admin.information') }}" class="inline-flex items-center gap-1.5 text-xs font-semibold bg-white/10 hover:bg-white/20 border border-white/15 text-white px-3.5 py-1.5 rounded-full transition-colors"><i class="bi bi-card-list"></i> Good to Know</a>
             <a href="{{ route('admin.settings') }}" class="inline-flex items-center gap-1.5 text-xs font-semibold bg-white/10 hover:bg-white/20 border border-white/15 text-white px-3.5 py-1.5 rounded-full transition-colors"><i class="bi bi-envelope-fill"></i> Contact info</a>
+            <a href="{{ route('admin.settings') }}" class="inline-flex items-center gap-1.5 text-xs font-semibold bg-white/10 hover:bg-white/20 border border-white/15 text-white px-3.5 py-1.5 rounded-full transition-colors"><i class="bi bi-people-fill"></i> Organizers</a>
         </div>
     </div>
 </div>

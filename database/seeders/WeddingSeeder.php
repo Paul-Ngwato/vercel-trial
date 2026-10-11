@@ -98,6 +98,15 @@ class WeddingSeeder extends Seeder
             $wedding->informationItems()->create($item + ['is_published' => true]);
         }
 
+        // Organizers — editable from Admin → Settings → Organizers
+        $wedding->update([
+            'organizer_name' => 'Diana Ochieng',
+            'organizer_role' => 'Wedding Coordinator',
+            'organizer_email' => 'diana.chieng@example.com',
+            'organizer_phone' => '+254 700 123 456',
+            'organizer_info' => 'Reach the couple through their coordinator, Diana, on +254 700 123 456 or diana.chieng@example.com — she can confirm the programme, arrange shuttle pickup, and sort any guest questions in plenty of time.',
+        ]);
+
         // Story milestones (via relationship)
         $milestones = [
             ['title' => 'How We Met', 'content' => 'It was a bright Saturday morning at a mutual friend\'s birthday party. Amidst the laughter and music, our eyes met across the room. What started as a simple conversation about shared interests turned into hours of talking, laughing, and discovering how much we had in common.', 'display_order' => 1],

@@ -1,5 +1,17 @@
 <?php
 
+/*
+| The public disk (uploaded photos) picks its driver from PUBLIC_DISK:
+|   s3     — an S3-compatible bucket (set the AWS_* variables too)
+|   db     — keep bytes in the file_storage table (used automatically on
+|            Vercel, whose runtime filesystem is read-only)
+|   local  — storage/app/public, served through the public/storage link
+*/
+$publicDisk = env('PUBLIC_DISK') ?: 'local';
+if (($publicDisk !== 's3' || ! env('AWS_ACCESS_KEY_ID')) && env('VERCEL')) {
+    $publicDisk = 'db'; // read-only filesystem — keep uploads in the database
+}
+
 return [
 
     /*
@@ -33,7 +45,7 @@ return [
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),
-            'serve' => true,
+            'serve' => false, // /storage/{path} is handled by routes/web.php instead
             'throw' => false,
             'report' => false,
         ],
@@ -41,7 +53,7 @@ return [
         // Uploaded photos. Locally this is storage/app/public (via the public/storage
         // symlink). On Vercel the filesystem is read-only, so set PUBLIC_DISK=s3 to keep
         // uploads in an S3-compatible bucket (AWS S3, Cloudflare R2, Supabase Storage...).
-        'public' => env('PUBLIC_DISK', 'local') === 's3'
+        'public' => $publicDisk === 's3'
             ? [
                 'driver' => 's3',
                 'key' => env('AWS_ACCESS_KEY_ID'),
@@ -54,14 +66,21 @@ return [
                 'throw' => false,
                 'report' => false,
             ]
-            : [
-                'driver' => 'local',
-                'root' => storage_path('app/public'),
-                'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
-                'visibility' => 'public',
-                'throw' => false,
-                'report' => false,
-            ],
+            : ($publicDisk === 'db'
+                ? [
+                    'driver' => 'dbfiles',
+                    'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
+                    'throw' => false,
+                    'report' => false,
+                ]
+                : [
+                    'driver' => 'local',
+                    'root' => storage_path('app/public'),
+                    'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
+                    'visibility' => 'public',
+                    'throw' => false,
+                    'report' => false,
+                ]),
 
         's3' => [
             'driver' => 's3',

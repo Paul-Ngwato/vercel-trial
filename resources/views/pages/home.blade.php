@@ -19,11 +19,13 @@
         <p class="intro-eyebrow">You are cordially invited to the wedding of</p>
         <h2 class="env-names font-playfair">{{ $wedding->bride_name ?? 'Bride' }} <em>&amp;</em> {{ $wedding->groom_name ?? 'Groom' }}</h2>
         <p class="env-date">{{ $wedding->wedding_date?->format('F j, Y') ?? 'Save the date' }}</p>
-        <div class="lottie-wrap">
+        <div class="env-wrap">
             <div class="env-glow" aria-hidden="true"></div>
-            <div id="intro-envelope" class="lottie-envelope" role="button" tabindex="0" aria-label="Open the invitation"></div>
+            <div id="intro-envelope" class="env-spiro-envelope" role="button" tabindex="0" aria-label="Open the invitation">
+                @include('pages.partials.env-spiro')
+            </div>
         </div>
-        <p class="env-tap"><i class="bi bi-hand-index-thumb-fill"></i> Tap the seal to open</p>
+        <p class="env-tap"><i class="bi bi-hand-index-thumb-fill"></i> Tap to open</p>
     </div>
 
     {{-- Stage 2 — tap-to-reveal photo --}}
@@ -916,36 +918,40 @@
     .invite-modal-inner { display: flex; flex-direction: column; align-items: center; gap: 16px; max-height: 100%; margin: auto; }
     .invite-modal-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
 
-    /* ═══ Envelope — Lottie animation, the star of the show ═══ */
-    .lottie-wrap { position: relative; display: inline-block; }
+    /* ═══ Envelope — the turtle spirograph IS the envelope ═══ */
+    .env-wrap { position: relative; display: inline-block; }
     .env-glow { position: absolute; inset: -44px; border-radius: 48px; background: radial-gradient(closest-side, rgba(201,168,76,.34), transparent); animation: envGlow 2.6s ease-in-out infinite; pointer-events: none; }
     .env-glow::after { content: ''; position: absolute; inset: 14%; border-radius: 50%; background: radial-gradient(closest-side, rgba(243,217,139,.30), transparent 70%); animation: envGlow 2.6s ease-in-out .6s infinite reverse; }
     @keyframes envGlow { 0%,100% { opacity: .5; transform: scale(1); } 50% { opacity: 1; transform: scale(1.06); } }
-    .lottie-envelope {
+    .env-spiro-envelope {
         position: relative; z-index: 1;
-        width: min(520px, 90vw);
-        aspect-ratio: 1440 / 1024;
+        width: min(520px, 88vw);
+        aspect-ratio: 1;
         cursor: pointer; outline: none;
         -webkit-tap-highlight-color: transparent;
-        filter: drop-shadow(0 24px 50px rgba(0,0,0,.45));
-        transition: transform .45s cubic-bezier(.2,.9,.3,1.2), opacity .5s ease;
-        animation: envBob 5.2s ease-in-out infinite;
+        transition: opacity .5s ease;
+        animation: envBob 5.2s ease-in-out infinite, envIn .9s cubic-bezier(.2,.8,.3,1) both;
     }
+    @keyframes envIn { from { opacity: 0; transform: scale(.9); } to { opacity: 1; transform: scale(1); } }
     /* gentle bob so it reads as "alive, tap me" */
     @keyframes envBob { 0%,100% { transform: translateY(0) rotate(-.4deg); } 50% { transform: translateY(-10px) rotate(.5deg); } }
-    .lottie-envelope:hover { animation: none; transform: scale(1.05) rotate(-1deg); }
-    /* gold light sweeping across the paper — draws the eye to the seal */
-    .lottie-envelope::after {
+    .env-spiro-envelope:hover { transform: scale(1.04); }
+    /* gold light sweeping across the mandala — draws the eye while it draws itself */
+    .env-spiro-envelope::after {
         content: ''; position: absolute; inset: 0; z-index: 2; pointer-events: none;
-        background: linear-gradient(115deg, transparent 34%, rgba(255,246,214,.42) 47%, rgba(255,246,214,.10) 52%, transparent 64%);
+        background: linear-gradient(115deg, transparent 34%, rgba(255,246,214,.34) 47%, rgba(255,246,214,.08) 52%, transparent 64%);
         mix-blend-mode: screen;
         transform: translateX(-120%);
         animation: envSheen 4.6s ease-in-out 1.2s infinite;
     }
     @keyframes envSheen { 0% { transform: translateX(-120%); } 28%,100% { transform: translateX(120%); } }
-    .lottie-envelope svg { width: 100%; height: 100%; display: block; }
-    /* graceful fallback if the animation file can't load */
-    .lottie-envelope.lottie-failed::before { content: '💌'; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 96px; }
+    /* the tap: the mandala spins open in a burst of light */
+    .env-spiro-envelope.opening { animation: spiroBurst .95s cubic-bezier(.3,.7,.3,1) forwards; pointer-events: none; }
+    @keyframes spiroBurst {
+        0% { transform: scale(1) rotate(0deg); opacity: 1; filter: brightness(1); }
+        35% { opacity: 1; filter: brightness(1.5); }
+        100% { transform: scale(1.4) rotate(52deg); opacity: 0; filter: brightness(2); }
+    }
     .env-tap {
         margin-top: 30px; color: #f3d98b; font-size: 12.5px; letter-spacing: .26em; text-transform: uppercase;
         display: inline-flex; align-items: center; gap: 10px;
@@ -958,6 +964,32 @@
     .env-tap i { font-size: 17px; }
     @keyframes tapRing { 0% { box-shadow: 0 0 0 0 rgba(201,168,76,.45); } 70% { box-shadow: 0 0 0 16px rgba(201,168,76,0); } 100% { box-shadow: 0 0 0 0 rgba(201,168,76,0); } }
     @keyframes tapPulse { 0%,100% { opacity: .55; } 50% { opacity: 1; } }
+
+    /* ═══ Turtle-drawn spirograph — the envelope's living artwork ═══
+       The classic 80-square/80-circle turtle pattern, rendered as SVG:
+       each line draws itself on like a pen — a long, deliberate buildup —
+       then the whole mandala keeps slowly turning. */
+    .env-spiro {
+        position: absolute; inset: 0;
+        display: flex; align-items: center; justify-content: center;
+        pointer-events: none;
+    }
+    .env-spiro svg { width: 96%; height: 96%; overflow: visible; animation: spiroTurn 90s linear infinite; filter: drop-shadow(0 0 5px rgba(233,217,139,.4)); }
+    @keyframes spiroTurn { to { transform: rotate(360deg); } }
+    .env-spiro path, .env-spiro circle {
+        fill: none; vector-effect: non-scaling-stroke; stroke-linecap: round;
+        stroke: rgba(233,217,139,.9); stroke-width: 1.5;
+        stroke-dasharray: 100; stroke-dashoffset: 100;
+    }
+    .env-spiro .spiro-ci circle { stroke: rgba(201,168,76,.75); stroke-width: 1.1; }
+    /* the buildup: squares sweep on one by one, then the circles weave in */
+    #wedding-intro.env-stage-on .env-spiro path {
+        animation: spiroDraw .8s ease forwards; animation-delay: calc(.2s + var(--i) * .05s);
+    }
+    #wedding-intro.env-stage-on .env-spiro circle {
+        animation: spiroDraw .6s ease forwards; animation-delay: calc(2.6s + var(--i) * .04s);
+    }
+    @keyframes spiroDraw { to { stroke-dashoffset: 0; } }
 
     /* ═══ Reveal photo frame ═══ */
     .scratch-frame { width: min(430px, 92vw); background: #fffdf6; border-radius: 18px; padding: 10px 10px 12px; box-shadow: 0 30px 80px rgba(0,0,0,.5), 0 0 0 1px rgba(201,168,76,.35), 0 0 40px rgba(201,168,76,.15); }
@@ -1037,19 +1069,20 @@
     @media (min-width: 768px) { .sound-toggle { bottom: 24px; left: 24px; } }
 
     @media (prefers-reduced-motion: reduce) {
-        .lottie-envelope, .intro-popup, .spark-bit, .reveal-tap-icon, .scroll-teaser, .env-glow,
-        .intro-petal, .cover-petals, .env-tap, .reveal-cover::after, .lottie-envelope::after,
+        .env-spiro-envelope, .intro-popup, .spark-bit, .reveal-tap-icon, .scroll-teaser, .env-glow,
+        .intro-petal, .cover-petals, .env-tap, .reveal-cover::after, .env-spiro-envelope::after,
         .reveal-cover .reveal-cover-inner { animation: none !important; }
         #intro-petals, .cover-petals { display: none; }
+        .env-spiro { animation: none !important; }
+        .env-spiro path, .env-spiro circle { stroke-dashoffset: 0 !important; animation: none !important; }
         .intro-popup { opacity: .9; transform: translate(-50%,-50%) scale(1); }
         /* opening is animation-driven — fall back to a simple fade so it still disappears */
-        .lottie-envelope.opening { opacity: 0 !important; transform: scale(1.22) translateY(-10px); }
+        .env-spiro-envelope.opening { opacity: 0 !important; transform: scale(1.22) translateY(-10px); }
     }
 </style>
 @endpush
 
 @push('scripts')
-<script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
 <script>
 /* ═══ Sounds — warm acoustic fingerpicking + soft chimes ═══
    The music is a live Karplus–Strong nylon-string guitar (no audio files,
@@ -1552,8 +1585,8 @@ function rsvpWizard() {
         clearSeen();
         finished = false;
         lockScroll();
-        bootLottie();
         seedFloaties();
+        preloadIntroImages();
         intro.classList.add('is-on');
         setTimeout(() => intro.classList.add('env-stage-on'), 350);
         initReveal();
@@ -1606,12 +1639,9 @@ function rsvpWizard() {
         env.dataset.opened = '1';
         WedSound.envelope();
         burst();
-        if (window.lottieEnvelope) {
-            window.lottieEnvelope.setSpeed(1.6); /* rip it open with energy */
-        }
         env.classList.add('opening');
         const myRun = runId;
-        setTimeout(() => { if (myRun === runId) showPhotoStage(); }, 1300);
+        setTimeout(() => { if (myRun === runId) showPhotoStage(); }, 700);
     }
 
     function showPhotoStage() {
@@ -1628,7 +1658,7 @@ function rsvpWizard() {
         const myRun = runId;
         setTimeout(function () {
             if (myRun === runId && !finished && !cover.classList.contains('open')) cover.click();
-        }, 9000);
+        }, 4500);
     }
 
     /* Popup memory flash — positions are clamped so photos never leave the screen */
@@ -1640,6 +1670,14 @@ function rsvpWizard() {
         $popupList = $popupList->unique()->take(8)->values();
     @endphp
     const popupPhotos = @json($popupList->map(fn($p) => asset('storage/' . $p))->all());
+
+    /* warm the image cache at intro start so the reveal photo and the popup
+       memories are already decoded when their moment comes — nothing blank */
+    function preloadIntroImages() {
+        const scratch = document.querySelector('.scratch-img');
+        if (scratch && scratch.src) { const warm = new Image(); warm.src = scratch.src; }
+        popupPhotos.forEach(function (src) { const warm = new Image(); warm.src = src; });
+    }
 
     function playPopups() {
         const box = document.getElementById('intro-popups');
@@ -1665,6 +1703,7 @@ function rsvpWizard() {
                 el.style.left = a.x + '%';
                 el.style.top = a.y + '%';
                 const im = document.createElement('img');
+                im.onerror = function () { if (el.parentNode) el.parentNode.removeChild(el); };
                 im.src = src;
                 el.appendChild(im);
                 box.appendChild(el);
@@ -1830,27 +1869,6 @@ function rsvpWizard() {
         });
     }
 
-    /* ═══ Lottie envelope animation — loads once, survives replays ═══ */
-    function bootLottie() {
-        if (window.lottieEnvelope || (window.lottieEnvelope && window.lottieEnvelope.isLoaded)) return;
-        const envEl = document.getElementById('intro-envelope');
-        if (!envEl) return;
-        if (window.lottie) {
-            window.lottieEnvelope = lottie.loadAnimation({
-                container: envEl,
-                renderer: 'svg',
-                loop: true,
-                autoplay: !reduce,
-                path: '{{ asset('vendor/lottie/envelope-opening.json') }}'
-            });
-            if (reduce) window.lottieEnvelope.goToAndStop(120, true);
-            window.lottieEnvelope.addEventListener('data_failed', function () {
-                envEl.classList.add('lottie-failed');
-            });
-        } else {
-            envEl.classList.add('lottie-failed');
-        }
-    }
     /* drifting glow-sparkles behind the envelope (pure CSS, cheap) */
     function seedFloaties() {
         const box = document.getElementById('intro-env-floaties');
